@@ -122,7 +122,9 @@ import {
   RotateCcw,
   FolderKanban,
   Loader2,
-  Edit
+  Edit,
+  MapPin,
+  Receipt
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Papa from 'papaparse';
@@ -130,6 +132,8 @@ import { MktProcessManager } from './components/MktProcessManager';
 import { DoiUngProcessManager } from './components/DoiUngProcessManager';
 import { MktEfficiencyManager } from './components/MktEfficiencyManager';
 import { AcceptanceManager } from './components/AcceptanceManager';
+import { BlockReciprocalRegistration } from './components/BlockReciprocalRegistration';
+import { AdminReciprocalBudgets } from './components/AdminReciprocalBudgets';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, BarChart, Bar, Legend, Cell, PieChart as RePieChart, Pie,
@@ -1061,6 +1065,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
     'home.view', 'home.export',
     'report_nt.view', 'report_nt.create', 'report_nt.edit', 'report_nt.delete', 'report_nt.import', 'report_nt.sync',
     'block.view', 'block.create', 'block.edit', 'block.delete', 'block.approve',
+    'block_budget.view', 'block_budget.create', 'block_budget.edit', 'block_budget.delete',
     'team_mgmt.view', 'team_mgmt.create', 'team_mgmt.edit', 'team_mgmt.delete', 'team_mgmt.approve',
     'register.view', 'register.create', 'register.edit', 'register.delete', 'register.import',
     'actual.view', 'actual.create', 'actual.edit', 'actual.delete', 'actual.import',
@@ -1081,6 +1086,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
     'home.view', 'home.export',
     'report_nt.view', 'report_nt.create', 'report_nt.edit', 'report_nt.delete', 'report_nt.import', 'report_nt.sync',
     'block.view', 'block.create', 'block.edit', 'block.delete', 'block.approve',
+    'block_budget.view', 'block_budget.create', 'block_budget.edit', 'block_budget.delete',
     'team_mgmt.view', 'team_mgmt.create', 'team_mgmt.edit', 'team_mgmt.delete', 'team_mgmt.approve',
     'register.view', 'register.create', 'register.edit', 'register.delete', 'register.import',
     'actual.view', 'actual.create', 'actual.edit', 'actual.delete', 'actual.import',
@@ -1100,7 +1106,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
   mod: [
     'home.view',
     'report_nt.view', 'report_nt.create', 'report_nt.edit', 'report_nt.delete', 'report_nt.import', 'report_nt.sync',
-    'block.view',
+    'block.view', 'block_budget.view',
     'team_mgmt.view',
     'register.view', 'register.create', 'register.edit',
     'actual.view', 'actual.create', 'actual.edit',
@@ -1114,7 +1120,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
   accountant: [
     'home.view', 'home.export',
     'report_nt.view',
-    'block.view',
+    'block.view', 'block_budget.view',
     'team_mgmt.view',
     'register.view',
     'actual.view',
@@ -1131,7 +1137,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
   gdda: [
     'home.view',
     'report_nt.view',
-    'block.view',
+    'block.view', 'block_budget.view',
     'team_mgmt.view',
     'register.view', 'register.create', 'register.edit',
     'actual.view', 'actual.create', 'actual.edit',
@@ -1146,6 +1152,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
     'home.view',
     'report_nt.view',
     'block.view', 'block.approve',
+    'block_budget.view', 'block_budget.create', 'block_budget.edit', 'block_budget.delete',
     'team_mgmt.view',
     'register.view',
     'actual.view',
@@ -1159,6 +1166,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
     'home.view',
     'report_nt.view',
     'block.view', 'block.approve',
+    'block_budget.view', 'block_budget.create', 'block_budget.edit', 'block_budget.delete',
     'team_mgmt.view',
     'register.view',
     'actual.view',
@@ -1171,7 +1179,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
   gdkd: [
     'home.view',
     'report_nt.view',
-    'block.view',
+    'block.view', 'block_budget.view',
     'team_mgmt.view', 'team_mgmt.approve',
     'register.view',
     'actual.view',
@@ -1185,6 +1193,7 @@ export const DEFAULT_PERMISSIONS: Record<string, string[]> = {
     'home.view', 'home.export',
     'report_nt.view',
     'block.view',
+    'block_budget.view', 'block_budget.create', 'block_budget.edit', 'block_budget.delete',
     'team_mgmt.view',
     'register.view', 'register.create', 'register.edit',
     'actual.view', 'actual.create', 'actual.edit',
@@ -1238,7 +1247,11 @@ export const PERMISSION_GROUPS = [
       { key: 'block.create', label: 'Tạo mới Khối kinh doanh', desc: 'Được phép tạo mới Khối trong hệ thống.' },
       { key: 'block.edit', label: 'Chỉnh sửa thông tin Khối', desc: 'Cập nhật tên khối, mã khối, phân bổ ngân sách khối.' },
       { key: 'block.delete', label: 'Xóa Khối kinh doanh', desc: 'Xóa Khối kinh doanh khỏi hệ thống.' },
-      { key: 'block.approve', label: 'Phê duyệt cấp Khối', desc: 'Ghi ý kiến phê duyệt / Đề xuất ngân sách liên phòng của Khối.' }
+      { key: 'block.approve', label: 'Phê duyệt cấp Khối', desc: 'Ghi ý kiến phê duyệt / Đề xuất ngân sách liên phòng của Khối.' },
+      { key: 'block_budget.view', label: 'Xem Ngân sách Khối', desc: 'Xem danh sách và chi tiết hồ sơ ngân sách Marketing của Khối.' },
+      { key: 'block_budget.create', label: 'Đăng ký mới Ngân sách Khối', desc: 'Đăng ký hạn mức ngân sách Marketing cho Khối theo từng dự án.' },
+      { key: 'block_budget.edit', label: 'Sửa Ngân sách Khối', desc: 'Chỉnh sửa hạn mức ngân sách Marketing đã đăng ký của Khối (trong kỳ cho phép).' },
+      { key: 'block_budget.delete', label: 'Xóa Ngân sách Khối', desc: 'Xóa bản ghi hạn mức ngân sách Marketing của Khối (trong kỳ cho phép).' }
     ]
   },
   {
@@ -1438,6 +1451,7 @@ export default function App() {
   const [blocks, setBlocks] = useState<any[]>([]);
   const [budgets, setBudgets] = useState<any[]>([]);
   const [blockBudgets, setBlockBudgets] = useState<any[]>([]);
+  const [reciprocalBudgets, setReciprocalBudgets] = useState<any[]>([]);
   const [costs, setCosts] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [efficiencyReports, setEfficiencyReports] = useState<any[]>([]);
@@ -1531,6 +1545,46 @@ export default function App() {
   const canManageBlockBudget = useMemo(() => {
     return isGDKhoi || isTroLyKhoi || isAssistant || isAdmin || isSuperAdmin;
   }, [isGDKhoi, isTroLyKhoi, isAssistant, isAdmin, isSuperAdmin]);
+
+  const canViewBlockBudget = useMemo(() => {
+    if (isAdmin || isSuperAdmin || user?.email === 'thienvu1108@gmail.com') return true;
+    const roleKey = (userRole || userProfile?.role || '').toLowerCase().trim();
+    const saved = rolePermissionsList.find(rp => rp.role === roleKey);
+    if (saved && Array.isArray(saved.permissions) && saved.permissions.some((p: string) => p.startsWith('block_budget.'))) {
+      return saved.permissions.includes('block_budget.view');
+    }
+    return hasPermission('block_budget.view') || hasPermission('block.view') || isGDKhoi || isTroLyKhoi || isAssistant;
+  }, [isAdmin, isSuperAdmin, user, userRole, userProfile, rolePermissionsList, hasPermission, isGDKhoi, isTroLyKhoi, isAssistant]);
+
+  const canCreateBlockBudget = useMemo(() => {
+    if (isAdmin || isSuperAdmin || user?.email === 'thienvu1108@gmail.com') return true;
+    const roleKey = (userRole || userProfile?.role || '').toLowerCase().trim();
+    const saved = rolePermissionsList.find(rp => rp.role === roleKey);
+    if (saved && Array.isArray(saved.permissions) && saved.permissions.some((p: string) => p.startsWith('block_budget.'))) {
+      return saved.permissions.includes('block_budget.create') || saved.permissions.includes('block_budget.edit');
+    }
+    return hasPermission('block_budget.create') || hasPermission('block_budget.edit') || isGDKhoi || isTroLyKhoi || isAssistant;
+  }, [isAdmin, isSuperAdmin, user, userRole, userProfile, rolePermissionsList, hasPermission, isGDKhoi, isTroLyKhoi, isAssistant]);
+
+  const canEditBlockBudget = useMemo(() => {
+    if (isAdmin || isSuperAdmin || user?.email === 'thienvu1108@gmail.com') return true;
+    const roleKey = (userRole || userProfile?.role || '').toLowerCase().trim();
+    const saved = rolePermissionsList.find(rp => rp.role === roleKey);
+    if (saved && Array.isArray(saved.permissions) && saved.permissions.some((p: string) => p.startsWith('block_budget.'))) {
+      return saved.permissions.includes('block_budget.edit');
+    }
+    return hasPermission('block_budget.edit') || isGDKhoi || isTroLyKhoi || isAssistant;
+  }, [isAdmin, isSuperAdmin, user, userRole, userProfile, rolePermissionsList, hasPermission, isGDKhoi, isTroLyKhoi, isAssistant]);
+
+  const canDeleteBlockBudget = useMemo(() => {
+    if (isAdmin || isSuperAdmin || user?.email === 'thienvu1108@gmail.com') return true;
+    const roleKey = (userRole || userProfile?.role || '').toLowerCase().trim();
+    const saved = rolePermissionsList.find(rp => rp.role === roleKey);
+    if (saved && Array.isArray(saved.permissions) && saved.permissions.some((p: string) => p.startsWith('block_budget.'))) {
+      return saved.permissions.includes('block_budget.delete');
+    }
+    return hasPermission('block_budget.delete') || isGDKhoi || isTroLyKhoi || isAssistant;
+  }, [isAdmin, isSuperAdmin, user, userRole, userProfile, rolePermissionsList, hasPermission, isGDKhoi, isTroLyKhoi, isAssistant]);
 
   const isUser = useMemo(() => {
     if (isAdmin || isSuperAdmin || isMod || isAccountant || isGDDA || isGDKhoi || isTroLyKhoi || isAssistant || isGDKD) {
@@ -4557,6 +4611,10 @@ export default function App() {
     });
   }, [teams, teamSearch, adminTeamBlockFilter, adminTeamSort, teamMemberCounts]);
 
+  // Project & Region sub-tab and dialog states
+  const [projectSubTab, setProjectSubTab] = useState<'project-list' | 'project-regions'>('project-list');
+  const [isAddRegionDialogOpen, setIsAddRegionDialogOpen] = useState(false);
+
   // Region management states
   const [newRegionName, setNewRegionName] = useState('');
   const [editingRegionId, setEditingRegionId] = useState<string | null>(null);
@@ -4564,10 +4622,13 @@ export default function App() {
   const [regionSearch, setRegionSearch] = useState('');
   const [regionSort, setRegionSort] = useState<{ key: string, direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
   const [isDeleteRegionDialogOpen, setIsDeleteRegionDialogOpen] = useState(false);
+  const [isBulkDeleteRegionsDialogOpen, setIsBulkDeleteRegionsDialogOpen] = useState(false);
+  const [isDeleteAllRegionsDialogOpen, setIsDeleteAllRegionsDialogOpen] = useState(false);
   const [regionToDelete, setRegionToDelete] = useState<{ id: string, name: string } | null>(null);
   const [isSetProjectsDialogOpen, setIsSetProjectsDialogOpen] = useState(false);
   const [regionForProjects, setRegionForProjects] = useState<any>(null);
   const [selectedProjectIdsForRegion, setSelectedProjectIdsForRegion] = useState<string[]>([]);
+  const [projectSearchForRegion, setProjectSearchForRegion] = useState('');
 
   // Type management states
   const [newTypeName, setNewTypeName] = useState('');
@@ -4903,8 +4964,6 @@ export default function App() {
   
   const [isBulkDeleteProjectsDialogOpen, setIsBulkDeleteProjectsDialogOpen] = useState(false);
   const [isDeleteAllProjectsDialogOpen, setIsDeleteAllProjectsDialogOpen] = useState(false);
-  const [isBulkDeleteRegionsDialogOpen, setIsBulkDeleteRegionsDialogOpen] = useState(false);
-  const [isDeleteAllRegionsDialogOpen, setIsDeleteAllRegionsDialogOpen] = useState(false);
   const [isBulkDeleteTypesDialogOpen, setIsBulkDeleteTypesDialogOpen] = useState(false);
   const [isDeleteAllTypesDialogOpen, setIsDeleteAllTypesDialogOpen] = useState(false);
   const [isDeleteUserDialogOpen, setIsDeleteUserDialogOpen] = useState(false);
@@ -5149,6 +5208,13 @@ export default function App() {
       setBlockBudgets(data);
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'block_budgets'));
 
+    // Listen to reciprocal_budgets - block reciprocal budget registrations
+    const qReciprocalBudgets = query(collection(db, 'reciprocal_budgets'), orderBy('createdAt', 'desc'));
+    const unsubReciprocalBudgets = onSnapshot(qReciprocalBudgets, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+      setReciprocalBudgets(data);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'reciprocal_budgets'));
+
     // Listen to costs - load all relevant costs to ensure mapping, team visibility, and actual costs work perfectly
     const qCosts = query(collection(db, 'costs'), orderBy('createdAt', 'desc'));
     const unsubCosts = onSnapshot(qCosts, (snapshot) => {
@@ -5196,6 +5262,7 @@ export default function App() {
       unsubTypes();
       unsubBudgets();
       unsubBlockBudgets();
+      unsubReciprocalBudgets();
       unsubCosts();
       unsubTeamNotifs();
       unsubSettings();
@@ -7872,8 +7939,8 @@ export default function App() {
   };
 
   const handleAddBlockBudget = async () => {
-    if (!canManageBlockBudget) {
-      toast.error("Chỉ Giám đốc Khối và Trợ lý mới có quyền đăng ký ngân sách Khối!");
+    if (!canCreateBlockBudget) {
+      toast.error("Tài khoản của bạn không có quyền đăng ký ngân sách Khối! Vui lòng liên hệ Admin.");
       return;
     }
     const isOverrideUser = isAdmin || isSuperAdmin || firebaseUserEmail === 'thienvu1108@gmail.com';
@@ -7939,8 +8006,8 @@ export default function App() {
   };
 
   const handleOpenEditBlockBudget = (b: any) => {
-    if (!canManageBlockBudget) {
-      toast.error("Chỉ Giám đốc Khối và Trợ lý mới có quyền chỉnh sửa ngân sách Khối!");
+    if (!canEditBlockBudget) {
+      toast.error("Tài khoản của bạn không có quyền chỉnh sửa ngân sách Khối! Vui lòng liên hệ Admin.");
       return;
     }
     const check = checkBlockBudgetActionAllowed(b.month);
@@ -7956,8 +8023,8 @@ export default function App() {
   };
 
   const handleSaveEditBlockBudget = async () => {
-    if (!canManageBlockBudget) {
-      toast.error("Chỉ Giám đốc Khối và Trợ lý mới có quyền chỉnh sửa ngân sách Khối!");
+    if (!canEditBlockBudget) {
+      toast.error("Tài khoản của bạn không có quyền chỉnh sửa ngân sách Khối! Vui lòng liên hệ Admin.");
       return;
     }
     if (!editingBlockBudget) return;
@@ -8007,8 +8074,8 @@ export default function App() {
   };
 
   const handleDeleteBlockBudget = async (b: any) => {
-    if (!canManageBlockBudget) {
-      toast.error("Chỉ Giám đốc Khối và Trợ lý mới có quyền xóa ngân sách Khối!");
+    if (!canDeleteBlockBudget) {
+      toast.error("Tài khoản của bạn không có quyền xóa ngân sách Khối! Vui lòng liên hệ Admin.");
       return;
     }
     const check = checkBlockBudgetActionAllowed(b.month);
@@ -8028,6 +8095,10 @@ export default function App() {
   };
 
   const syncOldBudgetsToBlockBudgets = async () => {
+    if (!canCreateBlockBudget) {
+      toast.error("Tài khoản của bạn không có quyền tạo/đồng bộ ngân sách Khối!");
+      return;
+    }
     if (blocks.length === 0 || budgets.length === 0) {
       toast.info("Chưa có dữ liệu Khối hoặc Ngân sách cũ để đồng bộ");
       return;
@@ -8967,7 +9038,6 @@ export default function App() {
     if (names.length === 0) return;
 
     setIsAddingRegion(true);
-    console.log('Adding regions:', names);
     toast.info(`Đang thêm ${names.length} vùng/khu vực...`);
     let successCount = 0;
     let duplicateCount = 0;
@@ -8991,6 +9061,7 @@ export default function App() {
       }
       
       setNewRegionName('');
+      setIsAddRegionDialogOpen(false);
       if (successCount > 0) {
         toast.success(`Đã thêm ${successCount} vùng/khu vực mới`);
       }
@@ -9006,12 +9077,38 @@ export default function App() {
   };
 
   const handleUpdateRegion = async (id: string, newName: string) => {
-    if (!newName.trim()) return;
-    try {
-      await updateDoc(doc(db, 'regions', id), { name: newName });
-      await logAction('UPDATE', 'regions', id, { name: newName });
+    const trimmedName = newName.trim();
+    if (!trimmedName) {
+      toast.error('Tên vùng không được để trống');
+      return;
+    }
+    const currentRegion = regions.find(r => r.id === id);
+    const oldName = currentRegion?.name || '';
+    if (oldName === trimmedName) {
       setEditingRegionId(null);
-      toast.success('Đã cập nhật vùng/khu vực');
+      return;
+    }
+    const isDup = regions.some(r => r.id !== id && r.name.toLowerCase() === trimmedName.toLowerCase());
+    if (isDup) {
+      toast.error(`Vùng "${trimmedName}" đã tồn tại`);
+      return;
+    }
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, 'regions', id), { name: trimmedName });
+
+      // Propagate rename to projects belonging to this region
+      if (oldName) {
+        const projectsToUpdate = projects.filter(p => p.region === oldName);
+        projectsToUpdate.forEach(p => {
+          batch.update(doc(db, 'projects', p.id), { region: trimmedName });
+        });
+      }
+
+      await batch.commit();
+      await logAction('UPDATE', 'regions', id, { name: trimmedName, oldName });
+      setEditingRegionId(null);
+      toast.success(`Đã cập nhật vùng thành "${trimmedName}"`);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'regions');
     }
@@ -9025,9 +9122,17 @@ export default function App() {
   const confirmDeleteRegion = async () => {
     if (!regionToDelete) return;
     try {
-      await deleteDoc(doc(db, 'regions', regionToDelete.id));
+      const batch = writeBatch(db);
+      batch.delete(doc(db, 'regions', regionToDelete.id));
+      if (regionToDelete.name) {
+        const projectsToClear = projects.filter(p => p.region === regionToDelete.name);
+        projectsToClear.forEach(p => {
+          batch.update(doc(db, 'projects', p.id), { region: '' });
+        });
+      }
+      await batch.commit();
       await logAction('DELETE', 'regions', regionToDelete.id, { name: regionToDelete.name });
-      toast.success('Đã xóa vùng/khu vực');
+      toast.success(`Đã xóa vùng "${regionToDelete.name}"`);
       setIsDeleteRegionDialogOpen(false);
       setRegionToDelete(null);
       setSelectedRegionIds(prev => prev.filter(rid => rid !== regionToDelete.id));
@@ -9046,8 +9151,13 @@ export default function App() {
     setIsBulkDeleteRegionsDialogOpen(false);
     try {
       const batch = writeBatch(db);
+      const selectedNames = new Set(regions.filter(r => selectedRegionIds.includes(r.id)).map(r => r.name));
       selectedRegionIds.forEach(id => {
         batch.delete(doc(db, 'regions', id));
+      });
+      const projectsToClear = projects.filter(p => p.region && selectedNames.has(p.region));
+      projectsToClear.forEach(p => {
+        batch.update(doc(db, 'projects', p.id), { region: '' });
       });
       await batch.commit();
       await logAction('DELETE_BULK', 'regions', 'multiple', { count: selectedRegionIds.length });
@@ -9072,6 +9182,10 @@ export default function App() {
       regions.forEach(r => {
         batch.delete(doc(db, 'regions', r.id));
       });
+      const projectsWithRegion = projects.filter(p => !!p.region);
+      projectsWithRegion.forEach(p => {
+        batch.update(doc(db, 'projects', p.id), { region: '' });
+      });
       await batch.commit();
       await logAction('DELETE_ALL', 'regions', 'all', { count: regions.length });
       toast.success('Đã xóa tất cả vùng/khu vực');
@@ -9086,18 +9200,22 @@ export default function App() {
     
     try {
       const batch = writeBatch(db);
-      // First, remove this region from all projects that currently have it (if we want to overwrite)
-      // Or just add it to selected ones.
-      // The user says "Set dự án theo vùng / khu vực, có thể set nhiều dự án cho 1 vùng, khu vực."
-      // This usually means assigning a list of projects to this region.
-      
+      // Projects previously assigned to this region that were deselected
+      const previousProjects = projects.filter(p => p.region === regionForProjects.name);
+      previousProjects.forEach(p => {
+        if (!selectedProjectIdsForRegion.includes(p.id)) {
+          batch.update(doc(db, 'projects', p.id), { region: '' });
+        }
+      });
+
+      // Projects currently selected for this region
       for (const projectId of selectedProjectIdsForRegion) {
         batch.update(doc(db, 'projects', projectId), { region: regionForProjects.name });
       }
       
       await batch.commit();
       await logAction('UPDATE_REGION_PROJECTS', 'projects', 'multiple', { region: regionForProjects.name, projectIds: selectedProjectIdsForRegion });
-      toast.success(`Đã cập nhật vùng cho ${selectedProjectIdsForRegion.length} dự án`);
+      toast.success(`Đã cập nhật vùng "${regionForProjects.name}" cho ${selectedProjectIdsForRegion.length} dự án`);
       setIsSetProjectsDialogOpen(false);
       setRegionForProjects(null);
       setSelectedProjectIdsForRegion([]);
@@ -13157,6 +13275,659 @@ export default function App() {
     );
   }
 
+  const renderRegionManagementContent = () => {
+    const filteredAndSortedRegions = regions
+      .filter(r => (r.name || '').toLowerCase().includes((regionSearch || '').toLowerCase()))
+      .sort((a, b) => {
+        const factor = regionSort.direction === 'asc' ? 1 : -1;
+        return (a.name || '').localeCompare(b.name || '') * factor;
+      });
+
+    const filteredProjectsForRegion = (() => {
+      if (!projectSearchForRegion.trim()) return projects;
+      const q = projectSearchForRegion.toLowerCase();
+      return projects.filter(p => 
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.projectCode && p.projectCode.toLowerCase().includes(q)) ||
+        (p.region && p.region.toLowerCase().includes(q))
+      );
+    })();
+
+    return (
+      <div className="grid grid-cols-1 gap-6">
+        {/* Region Controls & Filter Card */}
+        <Card className="border-none shadow-sm bg-white overflow-hidden">
+          <div className="h-1 bg-emerald-600 w-full" />
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex-1 max-w-md space-y-2">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">
+                  Tìm kiếm Vùng / Khu vực
+                </Label>
+                <div className="relative group">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                  <DebouncedInput 
+                    placeholder="Nhập tên vùng (VD: Quận 1, Quận 2...)" 
+                    className="h-11 pl-11 bg-slate-50 border-slate-200/80 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm font-medium"
+                    value={regionSearch}
+                    onChange={setRegionSearch}
+                  />
+                  {regionSearch && (
+                    <button
+                      onClick={() => setRegionSearch('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {(isAdmin || isAccountant) && (
+                <div className="flex items-center flex-wrap gap-2 pt-2 md:pt-0">
+                  <Button 
+                    onClick={() => {
+                      setNewRegionName('');
+                      setIsAddRegionDialogOpen(true);
+                    }}
+                    className="h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg shadow-emerald-100 px-5 transition-all flex items-center gap-2 text-xs"
+                  >
+                    <Plus className="w-4 h-4" /> Thêm Vùng / Khu vực
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Region Table Card */}
+        <Card className="border-none shadow-sm bg-white overflow-hidden">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="bg-emerald-600 p-2.5 rounded-2xl shadow-md shadow-emerald-100">
+                <MapPin className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-lg font-black text-slate-900">Danh mục Vùng / Khu vực</CardTitle>
+                  <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-black text-xs px-2.5 py-0.5">
+                    {regions.length} Vùng
+                  </Badge>
+                </div>
+                <CardDescription className="text-xs font-medium text-slate-400">
+                  Định nghĩa khu vực địa lý và phân bổ dự án bất động sản
+                </CardDescription>
+              </div>
+            </div>
+
+            {(isAdmin || isAccountant) && (
+              <div className="flex items-center flex-wrap gap-2">
+                {selectedRegionIds.length > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-9 rounded-xl text-xs font-bold text-rose-600 border-rose-200 hover:bg-rose-50 transition-all px-3.5"
+                    onClick={handleBulkDeleteRegions}
+                    disabled={isDeletingRegions}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                    {isDeletingRegions ? 'Đang xóa...' : `Xóa đã chọn (${selectedRegionIds.length})`}
+                  </Button>
+                )}
+
+                {regions.length > 0 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50/50 transition-all px-3"
+                    onClick={handleDeleteAllRegions}
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 mr-1.5 text-slate-400 group-hover:text-rose-600" />
+                    Xóa tất cả
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardHeader>
+
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-slate-50/60">
+                  <TableRow className="hover:bg-transparent border-b border-slate-100">
+                    {(isAdmin || isAccountant) && (
+                      <TableHead className="w-[50px] pl-6 py-4">
+                        <input 
+                          type="checkbox" 
+                          className="h-4 w-4 rounded border-slate-300 accent-emerald-600 cursor-pointer"
+                          checked={selectedRegionIds.length === regions.length && regions.length > 0}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedRegionIds(regions.map(r => r.id));
+                            } else {
+                              setSelectedRegionIds([]);
+                            }
+                          }}
+                        />
+                      </TableHead>
+                    )}
+                    <TableHead 
+                      className="cursor-pointer py-4 pl-4 group select-none" 
+                      onClick={() => setRegionSort({ key: 'name', direction: regionSort.direction === 'asc' ? 'desc' : 'asc' })}
+                    >
+                      <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">
+                        Tên Vùng / Khu vực 
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 group-hover:text-emerald-600" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">
+                      Dự án trực thuộc
+                    </TableHead>
+                    <TableHead className="py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">
+                      Ngày tạo
+                    </TableHead>
+                    <TableHead className="text-right pr-6 py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">
+                      Thao tác
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                  {filteredAndSortedRegions.map(r => {
+                    const regionProjects = projects.filter(p => p.region === r.name);
+                    const isSelected = selectedRegionIds.includes(r.id);
+                    const isEditing = editingRegionId === r.id;
+
+                    return (
+                      <TableRow 
+                        key={r.id} 
+                        className={cn(
+                          "group transition-all border-b border-slate-50",
+                          isSelected ? "bg-emerald-50/30" : "hover:bg-slate-50/40"
+                        )}
+                      >
+                        {(isAdmin || isAccountant) && (
+                          <TableCell className="pl-6 py-4">
+                            <input 
+                              type="checkbox" 
+                              className="h-4 w-4 rounded border-slate-300 accent-emerald-600 cursor-pointer"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedRegionIds(prev => [...prev, r.id]);
+                                } else {
+                                  setSelectedRegionIds(prev => prev.filter(id => id !== r.id));
+                                }
+                              }}
+                            />
+                          </TableCell>
+                        )}
+
+                        <TableCell className="py-4 pl-4">
+                          {isEditing ? (
+                            <div className="flex items-center gap-2 max-w-sm">
+                              <Input 
+                                value={editingRegionName} 
+                                onChange={e => setEditingRegionName(e.target.value)} 
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') handleUpdateRegion(r.id, editingRegionName);
+                                  if (e.key === 'Escape') setEditingRegionId(null);
+                                }}
+                                autoFocus
+                                className="h-9 px-3 rounded-lg border-emerald-300 bg-emerald-50/50 text-sm font-bold focus:ring-2 focus:ring-emerald-500/20" 
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors uppercase text-sm">
+                                {r.name}
+                              </span>
+                            </div>
+                          )}
+                        </TableCell>
+
+                        <TableCell className="py-4">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge 
+                              variant="secondary" 
+                              className={cn(
+                                "font-bold text-xs px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
+                                regionProjects.length > 0 
+                                  ? "bg-blue-50 text-blue-700 hover:bg-blue-100" 
+                                  : "bg-slate-100 text-slate-400"
+                              )}
+                              onClick={() => {
+                                setRegionForProjects(r);
+                                setSelectedProjectIdsForRegion(regionProjects.map(p => p.id));
+                                setProjectSearchForRegion('');
+                                setIsSetProjectsDialogOpen(true);
+                              }}
+                              title="Nhấn để xem hoặc phân bổ dự án"
+                            >
+                              {regionProjects.length} dự án
+                            </Badge>
+                            {regionProjects.length > 0 && (
+                              <span className="text-[11px] text-slate-400 font-medium truncate max-w-[240px] hidden md:inline">
+                                ({regionProjects.slice(0, 3).map(p => p.name).join(', ')}{regionProjects.length > 3 ? '...' : ''})
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="py-4 text-xs font-medium text-slate-400">
+                          {safeFormat(r.createdAt?.toDate ? r.createdAt.toDate() : new Date(), 'dd/MM/yyyy')}
+                        </TableCell>
+
+                        <TableCell className="py-4 pr-6 text-right">
+                          {(isAdmin || isAccountant) && (
+                            <div className="flex justify-end items-center gap-1">
+                              {isEditing ? (
+                                <>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-8 px-2.5 text-emerald-600 hover:bg-emerald-50 rounded-lg font-bold text-xs" 
+                                    onClick={() => handleUpdateRegion(r.id, editingRegionName)}
+                                  >
+                                    <Check className="h-4 w-4 mr-1" /> Lưu
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-8 px-2.5 text-slate-400 hover:bg-slate-100 rounded-lg text-xs" 
+                                    onClick={() => setEditingRegionId(null)}
+                                  >
+                                    <X className="h-4 w-4 mr-1" /> Hủy
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-8 px-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg font-bold text-xs flex items-center gap-1"
+                                    onClick={() => {
+                                      setRegionForProjects(r);
+                                      setSelectedProjectIdsForRegion(regionProjects.map(p => p.id));
+                                      setProjectSearchForRegion('');
+                                      setIsSetProjectsDialogOpen(true);
+                                    }}
+                                    title="Phân bổ dự án vào vùng này"
+                                  >
+                                    <FolderKanban className="h-3.5 w-3.5 text-emerald-600" />
+                                    <span className="hidden sm:inline">Gán dự án</span>
+                                  </Button>
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost" 
+                                    className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" 
+                                    onClick={() => {
+                                      setEditingRegionId(r.id);
+                                      setEditingRegionName(r.name);
+                                    }}
+                                    title="Sửa tên vùng"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost" 
+                                    className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg" 
+                                    onClick={() => handleDeleteRegion(r.id, r.name)}
+                                    title="Xóa vùng"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+
+                  {filteredAndSortedRegions.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={(isAdmin || isAccountant) ? 5 : 4} className="h-56 text-center">
+                        <div className="flex flex-col items-center justify-center space-y-3">
+                          <div className="bg-emerald-50 p-3.5 rounded-2xl border border-emerald-100">
+                            <MapPin className="h-7 w-7 text-emerald-500" />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="font-bold text-slate-900 text-sm">
+                              {regionSearch ? 'Không tìm thấy vùng nào khớp' : 'Chưa có vùng nào trong danh sách'}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {regionSearch ? 'Hãy thử tìm kiếm với từ khóa khác' : 'Nhấn nút "Thêm Vùng / Khu vực" để bắt đầu thiết lập'}
+                            </p>
+                          </div>
+                          {regionSearch && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-8 rounded-xl text-xs font-bold"
+                              onClick={() => setRegionSearch('')}
+                            >
+                              Xóa tìm kiếm
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Dialog: Add Region */}
+        <Dialog open={isAddRegionDialogOpen} onOpenChange={setIsAddRegionDialogOpen}>
+          <DialogContent className="sm:max-w-[500px] rounded-3xl border-none shadow-2xl p-6">
+            <DialogHeader>
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <DialogTitle className="text-xl font-black text-slate-900">Thêm Vùng / Khu vực mới</DialogTitle>
+              </div>
+              <DialogDescription className="font-medium text-slate-500 text-xs">
+                Nhập danh sách các vùng hoặc khu vực. Bạn có thể nhập nhiều vùng cùng lúc (mỗi dòng tương ứng 1 vùng).
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddRegion} className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">
+                  Tên Vùng / Khu vực (Mỗi dòng 1 vùng)
+                </Label>
+                <textarea 
+                  className="flex min-h-[160px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                  placeholder="VD:&#10;Quận 9&#10;Thủ Đức&#10;Quận 2&#10;Bình Chánh&#10;Long An" 
+                  value={newRegionName} 
+                  onChange={e => setNewRegionName(e.target.value)} 
+                  required
+                />
+              </div>
+              <DialogFooter className="pt-2 flex gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex-1 rounded-xl h-11 font-bold text-xs"
+                  onClick={() => setIsAddRegionDialogOpen(false)}
+                >
+                  Hủy bỏ
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1 rounded-xl h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-lg shadow-emerald-100" 
+                  disabled={isAddingRegion || !newRegionName.trim()}
+                >
+                  {isAddingRegion ? (
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin" /> Đang lưu...
+                    </div>
+                  ) : 'Xác nhận Lưu danh sách'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog: Delete Single Region */}
+        <Dialog open={isDeleteRegionDialogOpen} onOpenChange={setIsDeleteRegionDialogOpen}>
+          <DialogContent className="sm:max-w-[420px] rounded-3xl border-none shadow-2xl p-6">
+            <DialogHeader>
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-3">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <DialogTitle className="text-xl font-black text-slate-900">Xóa vùng / khu vực</DialogTitle>
+              <DialogDescription className="text-xs font-medium text-slate-500 leading-relaxed pt-1">
+                Bạn có chắc chắn muốn xóa vùng <strong className="text-slate-900 font-bold">"{regionToDelete?.name}"</strong>?
+                Tất cả các dự án thuộc vùng này sẽ tự động chuyển về trạng thái Chưa phân vùng.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6 flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1 rounded-xl h-11 font-bold text-xs"
+                onClick={() => {
+                  setIsDeleteRegionDialogOpen(false);
+                  setRegionToDelete(null);
+                }}
+              >
+                Hủy bỏ
+              </Button>
+              <Button 
+                variant="destructive" 
+                className="flex-1 rounded-xl h-11 font-black text-xs shadow-lg shadow-rose-100"
+                onClick={confirmDeleteRegion}
+              >
+                Xác nhận Xóa
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog: Bulk Delete Regions */}
+        <Dialog open={isBulkDeleteRegionsDialogOpen} onOpenChange={setIsBulkDeleteRegionsDialogOpen}>
+          <DialogContent className="sm:max-w-[420px] rounded-3xl border-none shadow-2xl p-6">
+            <DialogHeader>
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-3">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <DialogTitle className="text-xl font-black text-slate-900">Xóa các vùng đã chọn</DialogTitle>
+              <DialogDescription className="text-xs font-medium text-slate-500 leading-relaxed pt-1">
+                Bạn có chắc chắn muốn xóa <strong className="text-rose-600 font-bold">{selectedRegionIds.length} vùng</strong> đã chọn?
+                Tất cả các dự án thuộc các vùng này sẽ tự động chuyển về trạng thái Chưa phân vùng.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6 flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1 rounded-xl h-11 font-bold text-xs"
+                onClick={() => setIsBulkDeleteRegionsDialogOpen(false)}
+              >
+                Hủy bỏ
+              </Button>
+              <Button 
+                variant="destructive" 
+                className="flex-1 rounded-xl h-11 font-black text-xs shadow-lg shadow-rose-100"
+                onClick={confirmBulkDeleteRegions}
+                disabled={isDeletingRegions}
+              >
+                {isDeletingRegions ? 'Đang xóa...' : `Xóa (${selectedRegionIds.length}) vùng`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog: Delete All Regions */}
+        <Dialog open={isDeleteAllRegionsDialogOpen} onOpenChange={setIsDeleteAllRegionsDialogOpen}>
+          <DialogContent className="sm:max-w-[420px] rounded-3xl border-none shadow-2xl p-6">
+            <DialogHeader>
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mb-3">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <DialogTitle className="text-xl font-black text-slate-900">CẢNH BÁO: Xóa tất cả vùng</DialogTitle>
+              <DialogDescription className="text-xs font-medium text-slate-500 leading-relaxed pt-1">
+                Hành động này sẽ xóa toàn bộ danh sách vùng / khu vực và hủy liên kết vùng của tất cả dự án trong toàn bộ hệ thống.
+                Hành động này không thể hoàn tác!
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6 flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1 rounded-xl h-11 font-bold text-xs"
+                onClick={() => setIsDeleteAllRegionsDialogOpen(false)}
+              >
+                Hủy bỏ
+              </Button>
+              <Button 
+                variant="destructive" 
+                className="flex-1 rounded-xl h-11 font-black text-xs shadow-lg shadow-rose-200"
+                onClick={confirmDeleteAllRegions}
+              >
+                Xác nhận Xóa Tất Cả
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog: Set Projects for Region */}
+        <Dialog open={isSetProjectsDialogOpen} onOpenChange={setIsSetProjectsDialogOpen}>
+          <DialogContent className="sm:max-w-[650px] max-h-[85vh] flex flex-col p-6 rounded-3xl border-none shadow-2xl">
+            <DialogHeader className="pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-black text-slate-900">
+                    Gán dự án cho vùng: <span className="text-emerald-600">{regionForProjects?.name}</span>
+                  </DialogTitle>
+                  <DialogDescription className="text-xs font-medium text-slate-500">
+                    Tích chọn các dự án thuộc vùng này. Dự án bỏ tích sẽ chuyển về trạng thái Chưa phân vùng.
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2 flex-1 min-h-0 flex flex-col">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input 
+                    placeholder="Tìm theo tên dự án, mã dự án..."
+                    value={projectSearchForRegion}
+                    onChange={(e) => setProjectSearchForRegion(e.target.value)}
+                    className="pl-9 h-10 bg-slate-50 border-slate-200 rounded-xl text-xs font-medium"
+                  />
+                  {projectSearchForRegion && (
+                    <button
+                      onClick={() => setProjectSearchForRegion('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-10 text-xs font-bold rounded-xl whitespace-nowrap"
+                  onClick={() => {
+                    const currentIds = filteredProjectsForRegion.map(p => p.id);
+                    setSelectedProjectIdsForRegion(prev => Array.from(new Set([...prev, ...currentIds])));
+                  }}
+                >
+                  Chọn tất cả ({filteredProjectsForRegion.length})
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-10 text-xs font-bold text-slate-500 hover:text-rose-600 rounded-xl whitespace-nowrap"
+                  onClick={() => {
+                    const currentIds = new Set(filteredProjectsForRegion.map(p => p.id));
+                    setSelectedProjectIdsForRegion(prev => prev.filter(id => !currentIds.has(id)));
+                  }}
+                >
+                  Bỏ chọn
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between px-1 text-[11px] font-bold text-slate-500">
+                <span>Danh sách dự án ({filteredProjectsForRegion.length})</span>
+                <span className="text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                  Đã chọn: {selectedProjectIdsForRegion.length} dự án
+                </span>
+              </div>
+
+              <div className="flex-1 overflow-y-auto border border-slate-100 rounded-2xl p-2 divide-y divide-slate-100/80 bg-slate-50/50 max-h-[350px]">
+                {filteredProjectsForRegion.length === 0 ? (
+                  <div className="text-center py-8 text-xs text-slate-400 font-medium">
+                    Không tìm thấy dự án nào khớp với tìm kiếm
+                  </div>
+                ) : (
+                  filteredProjectsForRegion.map(proj => {
+                    const isSelected = selectedProjectIdsForRegion.includes(proj.id);
+                    const isCurrentlyInThisRegion = proj.region === regionForProjects?.name;
+                    return (
+                      <label 
+                        key={proj.id}
+                        className={cn(
+                          "flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-colors hover:bg-white",
+                          isSelected && "bg-emerald-50/60"
+                        )}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                          <input 
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedProjectIdsForRegion(prev => [...prev, proj.id]);
+                              } else {
+                                setSelectedProjectIdsForRegion(prev => prev.filter(id => id !== proj.id));
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-slate-300 accent-emerald-600"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-900 truncate">{proj.name}</p>
+                            {proj.projectCode && (
+                              <p className="text-[10px] font-mono text-slate-400">{proj.projectCode}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 text-right">
+                          {proj.region ? (
+                            <Badge variant="outline" className={cn(
+                              "text-[10px] font-bold",
+                              isCurrentlyInThisRegion ? "border-emerald-200 text-emerald-700 bg-emerald-50" : "border-slate-200 text-slate-500 bg-white"
+                            )}>
+                              {proj.region}
+                            </Badge>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 italic">Chưa phân vùng</span>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            <DialogFooter className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="rounded-xl h-11 font-bold text-xs"
+                onClick={() => {
+                  setIsSetProjectsDialogOpen(false);
+                  setRegionForProjects(null);
+                }}
+              >
+                Hủy bỏ
+              </Button>
+              <Button 
+                type="button"
+                className="rounded-xl h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-6 shadow-md shadow-emerald-100"
+                onClick={handleSetProjectsForRegion}
+              >
+                Lưu phân bổ ({selectedProjectIdsForRegion.length} dự án)
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Header */}
@@ -13406,6 +14177,17 @@ export default function App() {
                         >
                           <Layers className="w-3.5 h-3.5 shrink-0 text-purple-400" />
                           <span>Quản lý Ngân sách Khối</span>
+                        </button>
+
+                        <button
+                          onClick={() => { setAdminSubTab('reciprocal-budgets'); setIsMobileMenuOpen(false); }}
+                          className={cn(
+                            "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold transition-all touch-manipulation",
+                            adminSubTab === 'reciprocal-budgets' ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"
+                          )}
+                        >
+                          <Receipt className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                          <span>Ngân sách đối ứng</span>
                         </button>
 
                         <button
@@ -13666,6 +14448,14 @@ export default function App() {
                         onClick={() => setAdminSubTab('block-budgets')}
                       >
                         <Layers className="mr-2 h-4 w-4" /> Ngân sách Khối
+                      </Button>
+                      <Button 
+                        variant={adminSubTab === 'reciprocal-budgets' ? 'secondary' : 'ghost'} 
+                        size="sm" 
+                        className={`rounded-xl h-10 px-4 font-bold ${adminSubTab === 'reciprocal-budgets' ? 'bg-amber-600 text-white shadow-md' : 'text-slate-600'}`}
+                        onClick={() => setAdminSubTab('reciprocal-budgets')}
+                      >
+                        <Receipt className="mr-2 h-4 w-4" /> Ngân sách đối ứng
                       </Button>
                       <Button 
                         variant={adminSubTab === 'projects' ? 'secondary' : 'ghost'} 
@@ -14333,9 +15123,16 @@ export default function App() {
                   <TabsTrigger value="block-teams" className="rounded-xl px-5 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
                     <Users className="w-4 h-4 mr-2" /> Danh sách Nhóm
                   </TabsTrigger>
-                  <TabsTrigger value="block-budgets" className="rounded-xl px-5 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
-                    <Wallet className="w-4 h-4 mr-2" /> Đăng ký Ngân sách
-                  </TabsTrigger>
+                  {canViewBlockBudget && (
+                    <TabsTrigger value="block-budgets" className="rounded-xl px-5 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
+                      <Wallet className="w-4 h-4 mr-2" /> Đăng ký Ngân sách
+                    </TabsTrigger>
+                  )}
+                  {canViewBlockBudget && (
+                    <TabsTrigger value="block-reciprocal" className="rounded-xl px-5 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
+                      <Receipt className="w-4 h-4 mr-2" /> Đăng ký đối ứng
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="block-nt" className="rounded-xl px-5 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
                     <FileCheck className="w-4 h-4 mr-2" /> Nghiệm thu Chi phí MKT
                   </TabsTrigger>
@@ -15176,10 +15973,10 @@ export default function App() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {!canManageBlockBudget ? (
+                        {!canCreateBlockBudget ? (
                           <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-medium flex items-center gap-2">
                             <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
-                            <span>Chỉ Giám đốc Khối và Trợ lý mới có quyền tạo và chỉnh sửa ngân sách Khối.</span>
+                            <span>Tài khoản của bạn không có quyền đăng ký ngân sách Khối.</span>
                           </div>
                         ) : (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com') ? (
                           <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-medium flex items-center gap-2">
@@ -15201,7 +15998,7 @@ export default function App() {
                             placeholder="Chọn dự án..."
                             searchPlaceholder="Gõ tên hoặc mã dự án..."
                             emptyMessage="Không tìm thấy dự án"
-                            disabled={!canManageBlockBudget || (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')}
+                            disabled={!canCreateBlockBudget || (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')}
                           />
                         </div>
 
@@ -15219,7 +16016,7 @@ export default function App() {
                               onChange={(e) => setBlockBudgetMonth(e.target.value)}
                               placeholder="YYYY-MM"
                               className="rounded-xl border-slate-200 font-mono"
-                              disabled={!canManageBlockBudget || (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')}
+                              disabled={!canCreateBlockBudget || (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')}
                               readOnly={!isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com'}
                             />
                             {!isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com' && currentOpenBlockBudgetMonth && (
@@ -15235,14 +16032,14 @@ export default function App() {
                               value={blockBudgetAmount}
                               onChange={(e) => setBlockBudgetAmount(e.target.value)}
                               className="rounded-xl border-slate-200 font-semibold"
-                              disabled={!canManageBlockBudget || (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')}
+                              disabled={!canCreateBlockBudget || (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')}
                             />
                           </div>
                         </div>
 
                         <Button 
                           onClick={handleAddBlockBudget}
-                          disabled={!canManageBlockBudget || (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')}
+                          disabled={!canCreateBlockBudget || (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')}
                           className={`w-full text-white rounded-xl font-bold py-2.5 transition-all shadow-md cursor-pointer ${
                             (!currentOpenBlockBudgetMonth && !isAdmin && !isSuperAdmin && firebaseUserEmail !== 'thienvu1108@gmail.com')
                               ? 'bg-slate-400 hover:bg-slate-400 cursor-not-allowed shadow-none'
@@ -15294,7 +16091,7 @@ export default function App() {
                             >
                               <FileSpreadsheet className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Xuất Excel
                             </Button>
-                            {canManageBlockBudget && (
+                            {canCreateBlockBudget && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -15356,7 +16153,7 @@ export default function App() {
                                   : 'Không tìm thấy bản đăng ký ngân sách Khối nào'
                                 }
                               </p>
-                              {canManageBlockBudget && (
+                              {canCreateBlockBudget && (
                                 <p className="text-xs text-slate-400 mt-1.5 max-w-md mx-auto">
                                   {blockBudgetMonthFilter === currentMarketingPeriod
                                     ? 'Khối chưa có bản ghi ngân sách cho kỳ hiện tại này. Bạn có thể sử dụng form bên trái để đăng ký ngay.'
@@ -15445,28 +16242,32 @@ export default function App() {
                                             {new Intl.NumberFormat('vi-VN').format(diff)} đ
                                           </TableCell>
                                           <TableCell className="text-center">
-                                            {canManageBlockBudget ? (
+                                            {(canEditBlockBudget || canDeleteBlockBudget) ? (
                                               isRowEditable ? (
                                                 <div className="flex items-center justify-center gap-1.5">
-                                                  <Button 
-                                                    size="xs" 
-                                                    variant="outline" 
-                                                    className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 h-8 px-2.5 rounded-lg text-xs font-bold gap-1 transition-colors"
-                                                    title="Chỉnh sửa ngân sách"
-                                                    onClick={() => handleOpenEditBlockBudget(b)}
-                                                  >
-                                                    <Edit2 className="w-3.5 h-3.5" />
-                                                    <span>Sửa</span>
-                                                  </Button>
-                                                  <Button 
-                                                    size="xs" 
-                                                    variant="outline" 
-                                                    className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 h-8 px-2 rounded-lg text-xs transition-colors"
-                                                    title="Xóa đăng ký ngân sách"
-                                                    onClick={() => handleDeleteBlockBudget(b)}
-                                                  >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                  </Button>
+                                                  {canEditBlockBudget && (
+                                                    <Button 
+                                                      size="xs" 
+                                                      variant="outline" 
+                                                      className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 h-8 px-2.5 rounded-lg text-xs font-bold gap-1 transition-colors"
+                                                      title="Chỉnh sửa ngân sách"
+                                                      onClick={() => handleOpenEditBlockBudget(b)}
+                                                    >
+                                                      <Edit2 className="w-3.5 h-3.5" />
+                                                      <span>Sửa</span>
+                                                    </Button>
+                                                  )}
+                                                  {canDeleteBlockBudget && (
+                                                    <Button 
+                                                      size="xs" 
+                                                      variant="outline" 
+                                                      className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 h-8 px-2 rounded-lg text-xs transition-colors"
+                                                      title="Xóa đăng ký ngân sách"
+                                                      onClick={() => handleDeleteBlockBudget(b)}
+                                                    >
+                                                      <Trash2 className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                  )}
                                                 </div>
                                               ) : (
                                                 <div className="flex items-center justify-center">
@@ -15632,6 +16433,38 @@ export default function App() {
                   />
     </>
   )}
+                </TabsContent>
+
+                {/* TAB: Reciprocal Budget Registration for Block */}
+                <TabsContent value="block-reciprocal" className="space-y-6">
+                  {blockSubTab === 'block-reciprocal' && (
+                    <BlockReciprocalRegistration 
+                      currentActiveBlock={currentActiveBlock}
+                      user={user}
+                      userProfile={userProfile}
+                      isAdmin={isAdmin}
+                      isSuperAdmin={isSuperAdmin}
+                      isGDKhoi={isGDKhoi}
+                      isTroLyKhoi={isTroLyKhoi}
+                      isAssistant={isAssistant}
+                      isAccountant={isAccountant}
+                      currentMarketingPeriod={currentMarketingPeriod}
+                      currentOpenBlockBudgetMonth={currentOpenBlockBudgetMonth}
+                      systemSettings={systemSettings}
+                      reciprocalBudgets={reciprocalBudgets}
+                      blockBudgets={blockBudgets}
+                      budgets={budgets}
+                      teams={teams}
+                      blocks={blocks}
+                      allUsers={allUsers}
+                      formatCurrency={formatCurrency}
+                      formatCurrencyInput={formatCurrencyInput}
+                      parseVal={parseVal}
+                      safeFormat={safeFormat}
+                      logAction={logAction}
+                      db={db}
+                    />
+                  )}
                 </TabsContent>
 
               </Tabs>
@@ -16862,6 +17695,76 @@ export default function App() {
                     <TabsContent value="projects" className="space-y-6">
                       {adminSubTab === 'projects' && (
                         <>
+                          {/* Sub-tab Switcher: Projects vs Regions */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-2.5 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant={projectSubTab === 'project-list' ? 'default' : 'ghost'}
+                                size="sm"
+                                className={`h-9 px-4 rounded-xl font-bold transition-all text-xs flex items-center gap-2 ${
+                                  projectSubTab === 'project-list'
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-100'
+                                    : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/50'
+                                }`}
+                                onClick={() => setProjectSubTab('project-list')}
+                              >
+                                <Building2 className="w-3.5 h-3.5" />
+                                <span>Danh mục Dự án</span>
+                                <Badge variant="secondary" className={`ml-1 px-1.5 py-0 text-[10px] font-black rounded-md ${
+                                  projectSubTab === 'project-list' ? 'bg-blue-500 text-white border-none' : 'bg-slate-100 text-slate-600'
+                                }`}>
+                                  {projects.length}
+                                </Badge>
+                              </Button>
+
+                              <Button
+                                variant={projectSubTab === 'project-regions' ? 'default' : 'ghost'}
+                                size="sm"
+                                className={`h-9 px-4 rounded-xl font-bold transition-all text-xs flex items-center gap-2 ${
+                                  projectSubTab === 'project-regions'
+                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-100'
+                                    : 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50/50'
+                                }`}
+                                onClick={() => setProjectSubTab('project-regions')}
+                              >
+                                <MapPin className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Quản lý Vùng</span>
+                                <Badge variant="secondary" className={`ml-1 px-1.5 py-0 text-[10px] font-black rounded-md ${
+                                  projectSubTab === 'project-regions' ? 'bg-emerald-500 text-white border-none' : 'bg-slate-100 text-slate-600'
+                                }`}>
+                                  {regions.length}
+                                </Badge>
+                              </Button>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium px-1">
+                              {projectSubTab === 'project-list' ? (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="h-8 rounded-xl border-emerald-200 text-emerald-700 bg-emerald-50/60 hover:bg-emerald-100/80 transition-all font-bold text-xs"
+                                  onClick={() => setProjectSubTab('project-regions')}
+                                >
+                                  <MapPin className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                                  Chuyển sang Quản lý Vùng ({regions.length})
+                                </Button>
+                              ) : (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="h-8 rounded-xl border-blue-200 text-blue-700 bg-blue-50/60 hover:bg-blue-100/80 transition-all font-bold text-xs"
+                                  onClick={() => setProjectSubTab('project-list')}
+                                >
+                                  <Building2 className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
+                                  Quay lại Danh mục Dự án ({projects.length})
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+
+                          {projectSubTab === 'project-regions' ? (
+                            renderRegionManagementContent()
+                          ) : (
                       <div className="space-y-6">
                         {/* Project Controls Card */}
                         <Card className="border-none shadow-sm overflow-hidden bg-white">
@@ -16873,7 +17776,15 @@ export default function App() {
                                 <CardDescription className="text-xs font-medium text-slate-500">Quản lý toàn bộ danh sách dự án bất động sản trên hệ thống</CardDescription>
                               </div>
                               {(isAdmin || isAccountant) && (
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    className="h-9 rounded-xl border-emerald-200 text-emerald-700 bg-emerald-50/70 hover:bg-emerald-100 font-bold text-xs"
+                                    onClick={() => setProjectSubTab('project-regions')}
+                                  >
+                                    <MapPin className="w-4 h-4 mr-1.5 text-emerald-600" /> Quản lý Vùng ({regions.length})
+                                  </Button>
                                   <Button 
                                     variant="outline" 
                                     size="sm"
@@ -17359,273 +18270,14 @@ export default function App() {
                       </CardContent>
                     </Card>
                   </div>
+                          )}
                         </>
                       )}
                 </TabsContent>
 
                 {/* Region Management Tab */}
                 <TabsContent value="regions" className="space-y-6">
-  {adminSubTab === 'regions' && (
-    <>
-                  <div className="grid grid-cols-1 gap-6">
-                    {/* Region Controls */}
-                    <Card className="border-none shadow-sm bg-white overflow-hidden">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                          <div className="flex-1 max-w-md space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Tìm kiếm Vùng / Khu vực</Label>
-                            <div className="relative group">
-                              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                              <DebouncedInput 
-                                placeholder="Nhập tên vùng (VD: Quận 1, Quận 2...)" 
-                                className="h-11 pl-11 bg-slate-50 border-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm font-medium"
-                                value={regionSearch}
-                                onChange={setRegionSearch}
-                              />
-                            </div>
-                          </div>
-                          
-                          {(isAdmin || isAccountant) && (
-                            <Dialog>
-                              <DialogTrigger nativeButton={true} render={
-                                <Button className="h-12 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-100 px-6 transition-all transform active:scale-95 flex items-center gap-2">
-                                  <Plus className="w-5 h-5" /> Thêm Vùng / Khu vực
-                                </Button>
-                              } />
-                              <DialogContent className="sm:max-w-[500px] rounded-3xl border-none shadow-2xl">
-                                <DialogHeader>
-                                  <DialogTitle className="text-2xl font-black text-slate-900">Thêm Vùng mới</DialogTitle>
-                                  <DialogDescription className="font-medium text-slate-500">Nhập danh sách các vùng hoặc khu vực. Mỗi dòng tương ứng 1 vùng.</DialogDescription>
-                                </DialogHeader>
-                                <form onSubmit={handleAddRegion} className="space-y-6 pt-4">
-                                  <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Tên Vùng / Khu vực (Mỗi dòng 1 vùng)</Label>
-                                    <textarea 
-                                      className="flex min-h-[160px] w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium ring-offset-white placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                                      placeholder="VD: Quận 9&#10;Thủ Đức&#10;Quận 2" 
-                                      value={newRegionName} 
-                                      onChange={e => setNewRegionName(e.target.value)} 
-                                    />
-                                  </div>
-                                  <DialogFooter>
-                                    <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-100" disabled={isAddingRegion}>
-                                      {isAddingRegion ? (
-                                        <div className="flex items-center gap-2">
-                                          <RefreshCw className="w-4 h-4 animate-spin" /> Đang xử lý...
-                                        </div>
-                                      ) : 'Xác nhận lưu danh sách'}
-                                    </Button>
-                                  </DialogFooter>
-                                </form>
-                              </DialogContent>
-                            </Dialog>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Region Table */}
-                    <Card className="border-none shadow-sm bg-white overflow-hidden">
-                      <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-50 pb-6">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-emerald-600 p-2 rounded-xl">
-                            <MapIcon className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <CardTitle className="text-lg font-bold text-slate-900">Danh sách Vùng</CardTitle>
-                              <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold">
-                                {regions.length}
-                              </Badge>
-                            </div>
-                            <CardDescription className="text-[11px] font-medium text-slate-400">Định nghĩa các khu vực hoạt động</CardDescription>
-                          </div>
-                        </div>
-                        {(isAdmin || isAccountant) && (
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-9 rounded-xl text-[11px] font-bold text-red-600 border-red-100 hover:bg-red-50 transition-all px-4"
-                              onClick={handleBulkDeleteRegions}
-                              disabled={selectedRegionIds.length === 0 || isDeletingRegions}
-                            >
-                              <Trash2 className="w-3.5 h-3.5 mr-2" /> {isDeletingRegions ? 'Đang xóa...' : `Xóa (${selectedRegionIds.length})`}
-                            </Button>
-
-                            <Dialog>
-                              <DialogTrigger nativeButton={true} render={
-                                <Button 
-                                  variant="destructive" 
-                                  size="sm" 
-                                  className="h-9 rounded-xl text-[11px] font-bold px-4"
-                                  disabled={regions.length === 0}
-                                />
-                              }>
-                                <AlertTriangle className="w-3.5 h-3.5 mr-2" /> Xóa tất cả
-                              </DialogTrigger>
-                              <DialogContent className="sm:max-w-[400px] rounded-3xl border-none shadow-2xl">
-                                <DialogHeader>
-                                  <DialogTitle className="text-xl font-black text-slate-900">Xác nhận xóa tất cả?</DialogTitle>
-                                  <DialogDescription className="font-medium text-slate-500">Toàn bộ danh sách vùng / khu vực sẽ bị xóa vĩnh viễn.</DialogDescription>
-                                </DialogHeader>
-                                <DialogFooter className="mt-4">
-                                  <Button variant="outline" className="rounded-xl h-12 font-bold" onClick={() => {}}>Hủy</Button>
-                                  <Button variant="destructive" className="rounded-xl h-12 font-black shadow-lg shadow-red-100" onClick={handleDeleteAllRegions}>Xác nhận Xóa</Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-                          </div>
-                        )}
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <div className="rounded-xl border border-slate-100 overflow-x-auto scroll-hide">
-                          <Table>
-                            <TableHeader className="bg-slate-50/50">
-                              <TableRow className="hover:bg-transparent border-b border-slate-100">
-                                {(isAdmin || isAccountant) && (
-                                  <TableHead className="w-[50px] pl-6 py-4">
-                                    <input 
-                                      type="checkbox" 
-                                      className="h-4 w-4 rounded border-slate-300 accent-emerald-600"
-                                      checked={selectedRegionIds.length === regions.length && regions.length > 0}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          setSelectedRegionIds(regions.map(r => r.id));
-                                        } else {
-                                          setSelectedRegionIds([]);
-                                        }
-                                      }}
-                                    />
-                                  </TableHead>
-                                )}
-                                <TableHead className="cursor-pointer py-4 pl-4 group" onClick={() => setRegionSort({ key: 'name', direction: regionSort.direction === 'asc' ? 'desc' : 'asc' })}>
-                                  <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">
-                                    Tên Vùng / Khu vực <ArrowUpDown className="w-3 h-3" />
-                                  </div>
-                                </TableHead>
-                                <TableHead className="py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">Số lượng dự án</TableHead>
-                                <TableHead className="py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">Ngày tạo</TableHead>
-                                <TableHead className="text-right pr-6 py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">Thao tác</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {regions
-                                .filter(r => (r.name || '').toLowerCase().includes((regionSearch || '').toLowerCase()))
-                                .sort((a, b) => {
-                                  const factor = regionSort.direction === 'asc' ? 1 : -1;
-                                  return (a.name || '').localeCompare(b.name || '') * factor;
-                                })
-                                .map(r => {
-                                  const regionProjects = projects.filter(p => p.region === r.name);
-                                  return (
-                                    <TableRow key={r.id} className={`group transition-all border-b border-slate-50 ${selectedRegionIds.includes(r.id) ? "bg-emerald-50/20" : "hover:bg-slate-50/30"}`}>
-                                      {(isAdmin || isAccountant) && (
-                                        <TableCell className="pl-6 py-4">
-                                          <input 
-                                            type="checkbox" 
-                                            className="h-4 w-4 rounded border-slate-300 accent-emerald-600"
-                                            checked={selectedRegionIds.includes(r.id)}
-                                            onChange={(e) => {
-                                              if (e.target.checked) {
-                                                setSelectedRegionIds(prev => [...prev, r.id]);
-                                              } else {
-                                                setSelectedRegionIds(prev => prev.filter(id => id !== r.id));
-                                              }
-                                            }}
-                                          />
-                                        </TableCell>
-                                      )}
-                                      <TableCell className="py-4 pl-4">
-                                        {editingRegionId === r.id ? (
-                                          <Input value={editingRegionName} onChange={e => setEditingRegionName(e.target.value)} className="h-9 px-3 rounded-lg border-emerald-100 bg-emerald-50/30 text-sm font-bold" />
-                                        ) : (
-                                          <span className="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors uppercase italic">{r.name}</span>
-                                        )}
-                                      </TableCell>
-                                      <TableCell className="py-4">
-                                        <Badge variant="secondary" className="bg-slate-50 text-slate-600 border-slate-100 font-bold px-3 py-1 rounded-lg">
-                                          {regionProjects.length} dự án
-                                        </Badge>
-                                      </TableCell>
-                                      <TableCell className="py-4 text-xs font-medium text-slate-400">
-                                        {safeFormat(r.createdAt?.toDate ? r.createdAt.toDate() : new Date(), 'dd/MM/yyyy')}
-                                      </TableCell>
-                                      <TableCell className="py-4 pr-6 text-right">
-                                        {(isAdmin || isAccountant) && (
-                                          <div className="flex justify-end gap-1">
-                                            {editingRegionId === r.id ? (
-                                              <>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:bg-green-50 rounded-lg shadow-sm" onClick={() => handleUpdateRegion(r.id, editingRegionName)}>
-                                                  <Check className="h-4 w-4" />
-                                                </Button>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:bg-slate-100 rounded-lg" onClick={() => setEditingRegionId(null)}>
-                                                  <X className="h-4 w-4" />
-                                                </Button>
-                                              </>
-                                            ) : (
-                                              <>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" onClick={() => {
-                                                  setRegionForProjects(r);
-                                                  setSelectedProjectIdsForRegion(regionProjects.map(p => p.id));
-                                                  setIsSetProjectsDialogOpen(true);
-                                                }} title="Gán dự án">
-                                                  <Plus className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" onClick={() => {
-                                                  setEditingRegionId(r.id);
-                                                  setEditingRegionName(r.name);
-                                                }}>
-                                                  <Edit2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Dialog>
-                                                  <DialogTrigger nativeButton={true} render={
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg" />
-                                                  }>
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                  </DialogTrigger>
-                                                  <DialogContent className="sm:max-w-[400px] rounded-3xl border-none shadow-2xl">
-                                                    <DialogHeader>
-                                                      <DialogTitle className="text-xl font-black text-slate-900">Xóa vùng này?</DialogTitle>
-                                                      <DialogDescription className="font-medium text-slate-500">Dự án thuộc vùng này sẽ về trạng thái 'Chưa xác định'.</DialogDescription>
-                                                    </DialogHeader>
-                                                    <DialogFooter className="mt-4">
-                                                      <Button variant="outline" className="rounded-xl h-12 font-bold" onClick={() => {}}>Hủy</Button>
-                                                      <Button variant="destructive" className="rounded-xl h-12 font-black shadow-lg shadow-red-100" onClick={() => handleDeleteRegion(r.id, r.name)}>Xác nhận Xóa</Button>
-                                                    </DialogFooter>
-                                                  </DialogContent>
-                                                </Dialog>
-                                              </>
-                                            )}
-                                          </div>
-                                        )}
-                                      </TableCell>
-                                    </TableRow>
-                                  );
-                                })}
-                              {regions.length === 0 && (
-                                <TableRow>
-                                  <TableCell colSpan={(isAdmin || isAccountant) ? 5 : 4} className="h-64 text-center">
-                                    <div className="flex flex-col items-center justify-center space-y-4">
-                                      <div className="bg-slate-50 p-4 rounded-full border border-slate-100">
-                                        <MapIcon className="h-8 w-8 text-slate-300" />
-                                      </div>
-                                      <div className="space-y-1">
-                                        <p className="font-bold text-slate-900">Chưa có vùng nào</p>
-                                        <p className="text-xs text-slate-500">Hãy thêm vùng mới để quản lý dự án</p>
-                                      </div>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-    </>
-  )}
+                  {adminSubTab === 'regions' && renderRegionManagementContent()}
                 </TabsContent>
 
                 {/* Type Management Tab */}
@@ -19368,6 +20020,32 @@ export default function App() {
                   </Dialog>
     </>
   )}
+                </TabsContent>
+
+                {/* Admin Reciprocal Budgets Management Tab */}
+                <TabsContent value="reciprocal-budgets" className="space-y-6">
+                  {adminSubTab === 'reciprocal-budgets' && (
+                    <AdminReciprocalBudgets 
+                      reciprocalBudgets={reciprocalBudgets}
+                      blocks={blocks}
+                      teams={teams}
+                      allUsers={allUsers}
+                      blockBudgets={blockBudgets}
+                      budgets={budgets}
+                      user={user}
+                      userProfile={userProfile}
+                      isAdmin={isAdmin}
+                      isSuperAdmin={isSuperAdmin}
+                      isAccountant={isAccountant}
+                      currentMarketingPeriod={currentMarketingPeriod}
+                      formatCurrency={formatCurrency}
+                      formatCurrencyInput={formatCurrencyInput}
+                      parseVal={parseVal}
+                      safeFormat={safeFormat}
+                      logAction={logAction}
+                      db={db}
+                    />
+                  )}
                 </TabsContent>
 
                 {(isAdmin || isAccountant) && (
