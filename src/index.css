@@ -212,3 +212,30 @@ body {
     }
   }
 }
+
+/* ------------------------------------------------------------
+   Mobile readability: raise tiny arbitrary text sizes (8–10px)
+   to 11px on phones only. Desktop density is unchanged.
+   Unlayered so it beats the Tailwind utility on small screens;
+   `sm:text-[..]` variants still apply from 640px up.
+   ------------------------------------------------------------ */
+@media (max-width: 639px) {
+  .text-\[7px\],
+  .text-\[8px\],
+  .text-\[9px\],
+  .text-\[10px\] {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  /* Badges/pills that pair tiny text with a fixed tiny height would clip */
+  :is(.text-\[7px\], .text-\[8px\], .text-\[9px\], .text-\[10px\]):is(.h-3, .h-3\.5, .h-4, .h-4\.5) {
+    height: auto;
+    min-height: 1rem;
+  }
+
+  /* Uppercase micro-labels with very wide tracking get cramped at the new size */
+  :is(.text-\[8px\], .text-\[9px\], .text-\[10px\]):is(.tracking-widest, .tracking-\[0\.2em\]) {
+    letter-spacing: 0.05em;
+  }
+}
