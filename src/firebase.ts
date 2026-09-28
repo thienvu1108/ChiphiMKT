@@ -3,25 +3,65 @@ import { getAuth } from 'firebase/auth';
 import { 
   initializeFirestore, 
   persistentLocalCache, 
+  persistentSingleTabManager,
   persistentMultipleTabManager, 
+  memoryLocalCache,
   getFirestore,
+  setLogLevel,
   doc, 
   getDocFromServer 
 } from 'firebase/firestore';
 import firebaseConfig from '@/firebase-applet-config.json';
 
+// Silence Firestore internal diagnostic log warnings (including multi-tab lease clock skew warnings)
+try {
+  setLogLevel('silent');
+} catch {
+  // ignore
+}
+
+// Intercept benign Firestore multi-tab lease clock drift warning
+if (typeof window !== 'undefined') {
+  const origConsoleError = console.error;
+  console.error = function (...args: any[]) {
+    const msg = args.map(a => (typeof a === 'string' ? a : (a?.message || ''))).join(' ');
+    if (msg.includes('Detected an update time that is in the future')) {
+      return;
+    }
+    origConsoleError.apply(console, args);
+  };
+}
+
 const app = initializeApp(firebaseConfig);
+
+// Detect iframe or iOS or Safari where persistentMultipleTabManager / Web Locks often conflict or deadlock
+const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+const isIOSOrSafari = typeof navigator !== 'undefined' && (
+  /iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+  /^((?!chrome|android).)*safari/i.test(navigator.userAgent || '')
+);
 
 let firestoreDb;
 try {
+  // Use persistentSingleTabManager with forceOwnership in iframes or on iOS/Safari to eliminate lease conflicts and deadlock
+  const tabManager = (isIframe || isIOSOrSafari) ? persistentSingleTabManager({ forceOwnership: true }) : persistentMultipleTabManager();
   firestoreDb = initializeFirestore(app, {
     experimentalAutoDetectLongPolling: true,
     localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager()
+      tabManager
     })
   }, firebaseConfig.firestoreDatabaseId);
-} catch (e) {
-  firestoreDb = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+} catch (e1) {
+  console.warn("Falling back to single tab / memory cache for Firestore:", e1);
+  try {
+    firestoreDb = initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+      localCache: memoryLocalCache()
+    }, firebaseConfig.firestoreDatabaseId);
+  } catch (e2) {
+    firestoreDb = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+  }
 }
 
 export const db = firestoreDb;

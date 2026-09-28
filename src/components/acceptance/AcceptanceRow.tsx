@@ -12,7 +12,7 @@ import {
   History,
   Loader2
 } from 'lucide-react';
-import { getRowComputed, handleCostInputChange, resolveBlockForTeam } from './acceptanceUtils';
+import { getRowComputed, handleCostInputChange, resolveBlockForTeam, formatAcceptanceMonth } from './acceptanceUtils';
 import { AcceptanceSearchableSelect, SearchableItem } from './AcceptanceSearchableSelect';
 
 interface RowProps {
@@ -242,20 +242,19 @@ export const AcceptanceRow: React.FC<RowProps> = React.memo(({
         {/* Col A: THÁNG */}
         <TableCell className="p-1 min-w-[110px]">
           <Select
-            value={localEditState.month || 'Kì 1 - Tháng 8'}
+            value={localEditState.month || (monthsList && monthsList.length > 0 ? monthsList[0] : '')}
             onValueChange={(val) => handleUpdateEditField('month', val)}
           >
             <SelectTrigger className="h-7 text-[11px] font-bold border-indigo-200 bg-white rounded">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Kì 1 - Tháng 8">Kì 1 - Tháng 8</SelectItem>
-              <SelectItem value="Kì 2 - Tháng 8">Kì 2 - Tháng 8</SelectItem>
-              {monthsList
-                .filter(m => m !== 'Kì 1 - Tháng 8' && m !== 'Kì 2 - Tháng 8')
-                .map(m => (
-                  <SelectItem key={m} value={m}>{m}</SelectItem>
-                ))}
+            <SelectContent className="max-h-56">
+              {localEditState.month && !monthsList.includes(localEditState.month) && (
+                <SelectItem key={localEditState.month} value={localEditState.month}>{localEditState.month}</SelectItem>
+              )}
+              {monthsList.map(m => (
+                <SelectItem key={m} value={m}>{m}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </TableCell>
@@ -351,7 +350,9 @@ export const AcceptanceRow: React.FC<RowProps> = React.memo(({
                 handleUpdateEditFields({
                   projectId: p.id,
                   projectName: p.name || '',
-                  projectCode: p.projectCode || ''
+                  projectCode: p.projectCode || '',
+                  banKdId: p.banKdId || '',
+                  banKdName: p.banKdName || ''
                 });
               } else {
                 handleUpdateEditField('projectId', projectId);
@@ -553,7 +554,7 @@ export const AcceptanceRow: React.FC<RowProps> = React.memo(({
       {/* Col A: THÁNG */}
       <TableCell className="font-bold text-xs text-slate-800 whitespace-nowrap">
         <Badge variant="outline" className="bg-slate-100/80 text-slate-700 border-slate-200 font-bold text-[11px] px-1.5 py-0.5">
-          {item.month || '-'}
+          {formatAcceptanceMonth(item.month) || item.month || '-'}
         </Badge>
       </TableCell>
 
@@ -587,13 +588,21 @@ export const AcceptanceRow: React.FC<RowProps> = React.memo(({
 
       {/* Col E: DỰ ÁN */}
       <TableCell className="font-bold text-xs text-slate-800 min-w-[170px]" title={displayProjectName}>
-        <div className="flex items-center gap-1.5">
-          {displayProjectCode && (
-            <Badge variant="outline" className="text-[10px] font-mono px-1 py-0 bg-indigo-50/60 text-indigo-700 border-indigo-200 shrink-0 font-bold">
-              {displayProjectCode}
-            </Badge>
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-1.5">
+            {displayProjectCode && (
+              <Badge variant="outline" className="text-[10px] font-mono px-1 py-0 bg-indigo-50/60 text-indigo-700 border-indigo-200 shrink-0 font-bold">
+                {displayProjectCode}
+              </Badge>
+            )}
+            <span className="truncate">{displayProjectName}</span>
+          </div>
+          {(matchedProject?.banKdName || item.banKdName) && (
+            <div className="flex items-center gap-1 text-[10px] text-blue-600 font-semibold truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+              <span className="truncate">{matchedProject?.banKdName || item.banKdName}</span>
+            </div>
           )}
-          <span className="truncate">{displayProjectName}</span>
         </div>
       </TableCell>
 

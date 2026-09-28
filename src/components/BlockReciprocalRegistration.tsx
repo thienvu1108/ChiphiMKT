@@ -3,7 +3,7 @@ import {
   Receipt, CreditCard, Building2, Calendar, AlertCircle, 
   CheckCircle2, Clock, Trash2, Edit3, Plus, RefreshCw, 
   HelpCircle, ArrowRight, ShieldCheck, Sparkles, AlertTriangle,
-  FileSpreadsheet
+  FileSpreadsheet, LayoutGrid, Table as TableIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
@@ -22,9 +22,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { getPaymentStatusInfo, PaymentStatusType } from './AdminReciprocalBudgets';
 
 interface BlockReciprocalRegistrationProps {
   currentActiveBlock: any;
+  setSelectedBlockId?: (id: string) => void;
+  userAllowedBlocks?: any[];
   user: any;
   userProfile: any;
   isAdmin: boolean;
@@ -33,6 +51,10 @@ interface BlockReciprocalRegistrationProps {
   isTroLyKhoi: boolean;
   isAssistant: boolean;
   isAccountant: boolean;
+  canView?: boolean;
+  canCreate?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
   currentMarketingPeriod: string;
   currentOpenBlockBudgetMonth: string;
   systemSettings: any;
@@ -41,6 +63,7 @@ interface BlockReciprocalRegistrationProps {
   budgets: any[];
   teams: any[];
   blocks: any[];
+  projects?: any[];
   allUsers: any[];
   formatCurrency: (val: number) => string;
   formatCurrencyInput: (val: string) => string;
@@ -50,8 +73,76 @@ interface BlockReciprocalRegistrationProps {
   db: any;
 }
 
+const normalizeBlockIdentifier = (val: string | undefined | null): string => {
+  if (!val) return '';
+  return String(val)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/^(khoi|block|k\.|k)\s*/i, '')
+    .replace(/[^a-z0-9.]/gi, '')
+    .trim();
+};
+
+const isBlockRecordMatch = (record: any, block: any): boolean => {
+  if (!record || !block) return false;
+
+  const targetId = (block.id || '').trim();
+  const targetCode = (block.blockCode || '').trim().toLowerCase();
+  const targetName = (block.name || '').trim().toLowerCase();
+
+  const recBlockId = (record.blockId || '').trim();
+  const recCode = (record.blockCode || '').trim().toLowerCase();
+  const recName = (record.blockName || '').trim().toLowerCase();
+
+  // 1. Exact blockId match
+  if (recBlockId && targetId && recBlockId === targetId) {
+    return true;
+  }
+
+  // 2. Legacy: blockId was stored as blockCode
+  if (recBlockId && targetCode && recBlockId.toLowerCase() === targetCode) {
+    return true;
+  }
+
+  // 3. If recBlockId is a distinct Firestore ID (>= 15 chars) and doesn't match targetId, it's another block!
+  if (recBlockId && recBlockId.length >= 15 && targetId && recBlockId !== targetId) {
+    return false;
+  }
+
+  // 4. Exact code match
+  if (recCode && targetCode && recCode === targetCode) {
+    return true;
+  }
+
+  // 5. Exact name match
+  if (recName && targetName && recName === targetName) {
+    return true;
+  }
+
+  // If both have codes and they differ, do not cross-match different blocks
+  if (recCode && targetCode && recCode !== targetCode) {
+    return false;
+  }
+
+  // 6. Normalized match
+  const normTargetCode = normalizeBlockIdentifier(block.blockCode);
+  const normTargetName = normalizeBlockIdentifier(block.name);
+  const normRecCode = normalizeBlockIdentifier(record.blockCode);
+  const normRecName = normalizeBlockIdentifier(record.blockName);
+
+  if (normTargetCode && normRecCode && normTargetCode === normRecCode) return true;
+  if (normTargetName && normRecName && normTargetName === normRecName) return true;
+  if (normTargetCode && normRecName && normTargetCode === normRecName) return true;
+  if (normTargetName && normRecCode && normTargetName === normRecCode) return true;
+
+  return false;
+};
+
 export function BlockReciprocalRegistration({
   currentActiveBlock,
+  setSelectedBlockId,
+  userAllowedBlocks,
   user,
   userProfile,
   isAdmin,
@@ -60,6 +151,10 @@ export function BlockReciprocalRegistration({
   isTroLyKhoi,
   isAssistant,
   isAccountant,
+  canView,
+  canCreate,
+  canEdit,
+  canDelete,
   currentMarketingPeriod,
   currentOpenBlockBudgetMonth,
   systemSettings,
@@ -68,6 +163,7 @@ export function BlockReciprocalRegistration({
   budgets,
   teams,
   blocks,
+  projects = [],
   allUsers,
   formatCurrency,
   formatCurrencyInput,
@@ -76,11 +172,17 @@ export function BlockReciprocalRegistration({
   logAction,
   db
 }: BlockReciprocalRegistrationProps) {
+  const hasViewPerm = canView ?? (isAdmin || isSuperAdmin || isGDKhoi || isTroLyKhoi || isAssistant || isAccountant);
+  const hasCreatePerm = canCreate ?? (isAdmin || isSuperAdmin || isGDKhoi || isTroLyKhoi || isAssistant);
+  const hasEditPerm = canEdit ?? (isAdmin || isSuperAdmin || isGDKhoi || isTroLyKhoi || isAssistant || isAccountant);
+  const hasDeletePerm = canDelete ?? (isAdmin || isSuperAdmin || isGDKhoi || isTroLyKhoi || isAssistant);
+
   // Selected Month: Default to current marketing period (e.g. 2026-09)
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMarketingPeriod || '');
   const [companyCardBudgetInput, setCompanyCardBudgetInput] = useState<string>('');
   const [externalBudgetInput, setExternalBudgetInput] = useState<string>('');
   const [noteInput, setNoteInput] = useState<string>('');
+  const [historyViewMode, setHistoryViewMode] = useState<'table' | 'cards'>('table');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
@@ -100,7 +202,7 @@ export function BlockReciprocalRegistration({
     // 1. Direct block budgets
     const directSum = blockBudgets
       .filter(bb => 
-        (bb.blockId === currentActiveBlock.id || bb.blockCode === currentActiveBlock.blockCode) && 
+        isBlockRecordMatch(bb, currentActiveBlock) && 
         bb.month === selectedMonth
       )
       .reduce((sum, bb) => sum + (bb.amount || 0), 0);
@@ -111,7 +213,7 @@ export function BlockReciprocalRegistration({
     const blockTeams = teams.filter(t => {
       if (t.blockId && t.blockId === currentActiveBlock.id) return true;
       if (t.blockCode && t.blockCode === currentActiveBlock.blockCode) return true;
-      const prefix = currentActiveBlock.teamPrefix || '';
+      const prefix = currentActiveBlock.teamPrefix || currentActiveBlock.blockCode || '';
       if (prefix && t.teamCode && t.teamCode.toUpperCase().startsWith(prefix.toUpperCase())) return true;
       return false;
     });
@@ -129,11 +231,20 @@ export function BlockReciprocalRegistration({
     return teamSum;
   }, [currentActiveBlock, selectedMonth, blockBudgets, budgets, teams]);
 
+  // List of block budgets for this block in selectedMonth (with projects and Ban KD)
+  const relevantBlockBudgets = useMemo(() => {
+    if (!currentActiveBlock || !selectedMonth) return [];
+    return blockBudgets.filter(bb => 
+      isBlockRecordMatch(bb, currentActiveBlock) && 
+      bb.month === selectedMonth
+    );
+  }, [currentActiveBlock, selectedMonth, blockBudgets]);
+
   // Existing reciprocal record for currentActiveBlock and selectedMonth
   const existingRecord = useMemo(() => {
     if (!currentActiveBlock || !selectedMonth) return null;
     return reciprocalBudgets.find(rb => 
-      (rb.blockId === currentActiveBlock.id || rb.blockCode === currentActiveBlock.blockCode) &&
+      isBlockRecordMatch(rb, currentActiveBlock) &&
       rb.month === selectedMonth
     ) || null;
   }, [currentActiveBlock, selectedMonth, reciprocalBudgets]);
@@ -173,7 +284,7 @@ export function BlockReciprocalRegistration({
   const blockHistory = useMemo(() => {
     if (!currentActiveBlock) return [];
     return reciprocalBudgets
-      .filter(rb => rb.blockId === currentActiveBlock.id || rb.blockCode === currentActiveBlock.blockCode)
+      .filter(rb => isBlockRecordMatch(rb, currentActiveBlock))
       .sort((a, b) => (b.month || '').localeCompare(a.month || ''));
   }, [currentActiveBlock, reciprocalBudgets]);
 
@@ -189,6 +300,14 @@ export function BlockReciprocalRegistration({
   // Handle Submit Form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingRecordId && !hasEditPerm) {
+      toast.error('Bạn không có quyền chỉnh sửa bản ghi đối ứng!');
+      return;
+    }
+    if (!editingRecordId && !hasCreatePerm) {
+      toast.error('Bạn không có quyền thêm mới bản ghi đối ứng!');
+      return;
+    }
     if (!canRegister) {
       toast.error('Bạn không có quyền thực hiện đăng ký đối ứng cho Khối!');
       return;
@@ -219,6 +338,9 @@ export function BlockReciprocalRegistration({
       const directorName = blockDirector?.displayName || blockDirector?.email || currentActiveBlock.directorName || 'Chưa gán';
       const directorUid = currentActiveBlock.directorUid || '';
 
+      // Preserve existing payment status on update, default to 'unpaid' for new records
+      const preservedPaymentStatus = editingRecordId ? (existingRecord?.paymentStatus || 'unpaid') : 'unpaid';
+
       const payload = {
         blockId: currentActiveBlock.id,
         blockCode: currentActiveBlock.blockCode,
@@ -229,6 +351,7 @@ export function BlockReciprocalRegistration({
         totalBlockBudget,
         companyCardBudget: parsedCompanyCard,
         externalBudget: parsedExternal,
+        paymentStatus: preservedPaymentStatus,
         note: noteInput.trim(),
         updatedAt: serverTimestamp(),
         updatedBy: user?.email || 'N/A',
@@ -243,15 +366,17 @@ export function BlockReciprocalRegistration({
           month: selectedMonth,
           totalBlockBudget,
           companyCardBudget: parsedCompanyCard,
-          externalBudget: parsedExternal
+          externalBudget: parsedExternal,
+          paymentStatus: preservedPaymentStatus
         });
         toast.success(`Đã cập nhật Đăng ký đối ứng kỳ ${selectedMonth} thành công!`);
       } else {
-        // Create new record
+        // Create new record (default paymentStatus is 'unpaid')
         const newDoc = await addDoc(collection(db, 'reciprocal_budgets'), {
           ...payload,
           approvedReciprocalBudget: 0,
           approvalStatus: 'pending',
+          paymentStatus: 'unpaid',
           createdAt: serverTimestamp(),
           createdBy: user?.email || 'N/A',
           createdByName: userProfile?.displayName || user?.displayName || user?.email || 'N/A'
@@ -261,7 +386,8 @@ export function BlockReciprocalRegistration({
           month: selectedMonth,
           totalBlockBudget,
           companyCardBudget: parsedCompanyCard,
-          externalBudget: parsedExternal
+          externalBudget: parsedExternal,
+          paymentStatus: 'unpaid'
         });
         toast.success(`Đã gửi Đăng ký đối ứng kỳ ${selectedMonth} thành công!`);
       }
@@ -272,6 +398,7 @@ export function BlockReciprocalRegistration({
       setIsSubmitting(false);
     }
   };
+
 
   // Handle Delete
   const handleConfirmDelete = async () => {
@@ -298,6 +425,22 @@ export function BlockReciprocalRegistration({
     }
   };
 
+  if (!hasViewPerm) {
+    return (
+      <Card className="border-none shadow-sm p-8 text-center bg-white rounded-3xl">
+        <div className="max-w-md mx-auto space-y-3">
+          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto">
+            <Receipt className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-black text-slate-800">Không có quyền truy cập</h3>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Bạn chưa được phân quyền xem mục <strong>Đăng ký đối ứng</strong>. Vui lòng liên hệ Quản trị viên để được cấp quyền <code className="text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-mono">reciprocal_budget.view</code>.
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300 font-sans">
       {/* Top Banner Guide */}
@@ -315,9 +458,16 @@ export function BlockReciprocalRegistration({
                 </Badge>
               )}
             </div>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight">
-              Đăng ký Ngân sách Đối ứng - {currentActiveBlock ? `${currentActiveBlock.name || currentActiveBlock.blockCode}` : 'Chưa chọn Khối'}
-            </h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                Đăng ký Ngân sách Đối ứng - {currentActiveBlock ? `${currentActiveBlock.name || currentActiveBlock.blockCode}` : 'Chưa chọn Khối'}
+              </h2>
+              {currentActiveBlock && (
+                <Badge className="bg-white/20 text-white border-white/30 rounded-xl font-bold px-3 py-1 text-xs backdrop-blur-sm">
+                  {currentActiveBlock.blockCode || 'Khối'}
+                </Badge>
+              )}
+            </div>
             <p className="text-amber-100 text-xs sm:text-sm font-medium leading-relaxed">
               Kê khai phân bổ ngân sách chạy qua thẻ công ty và ngân sách chạy ngoài. Ngân sách đối ứng sẽ được tính toán và phê duyệt dựa trên nguồn ngân sách tự chạy ngoài.
             </p>
@@ -412,8 +562,39 @@ export function BlockReciprocalRegistration({
                       <span>Chưa có hạn mức Ngân sách Khối được đăng ký trong kỳ {selectedMonth}.</span>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-slate-500">
-                      Dữ liệu được lấy từ mục Ngân sách Khối tương ứng của tháng {selectedMonth}.
+                    <div className="space-y-2 pt-1">
+                      <div className="text-[10px] text-slate-500">
+                        Dữ liệu được lấy từ mục Ngân sách Khối tương ứng của tháng {selectedMonth}.
+                      </div>
+                      {relevantBlockBudgets.length > 0 && (
+                        <div className="pt-2 border-t border-amber-200/60 space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] font-black uppercase text-amber-900">
+                            <span>Dự án & Ban KD trong kỳ ({relevantBlockBudgets.length}):</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                            {relevantBlockBudgets.map((bb: any) => {
+                              const proj = projects.find(p => p.id === bb.projectId || p.name === bb.projectName);
+                              const banName = bb.banKdName || proj?.banKdName;
+                              return (
+                                <div 
+                                  key={bb.id}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-amber-200 text-xs text-slate-800 shadow-2xs"
+                                >
+                                  <span className="font-bold">{bb.projectName || proj?.name}</span>
+                                  {banName && (
+                                    <Badge variant="outline" className="px-1.5 py-0 text-[10px] bg-blue-50 text-blue-700 border-blue-200 font-bold">
+                                      {banName}
+                                    </Badge>
+                                  )}
+                                  <span className="font-mono font-bold text-amber-800 ml-1">
+                                    {formatCurrency(bb.amount || 0)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -582,12 +763,40 @@ export function BlockReciprocalRegistration({
                 </CardDescription>
               </div>
 
-              {/* Quick block director display */}
-              <div className="text-right text-xs">
-                <span className="text-slate-400 font-medium">Giám đốc Khối: </span>
-                <strong className="text-slate-800 font-bold">
-                  {blockDirector?.displayName || blockDirector?.email || currentActiveBlock?.directorName || 'Chưa gán'}
-                </strong>
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                {/* View switcher: Table vs Cards */}
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setHistoryViewMode('table')}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                      historyViewMode === 'table'
+                        ? 'bg-white text-slate-800 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <TableIcon className="w-3.5 h-3.5" /> Bảng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryViewMode('cards')}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                      historyViewMode === 'cards'
+                        ? 'bg-white text-slate-800 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" /> Thẻ
+                  </button>
+                </div>
+
+                {/* Quick block director display */}
+                <div className="text-right text-xs hidden sm:block">
+                  <span className="text-slate-400 font-medium">GĐ Khối: </span>
+                  <strong className="text-slate-800 font-bold">
+                    {blockDirector?.displayName || blockDirector?.email || currentActiveBlock?.directorName || 'Chưa gán'}
+                  </strong>
+                </div>
               </div>
             </CardHeader>
 
@@ -604,11 +813,158 @@ export function BlockReciprocalRegistration({
                     Hãy điền thông tin vào biểu mẫu bên trái để thực hiện đăng ký đối ứng cho khối trong kỳ hiện tại.
                   </p>
                 </div>
+              ) : historyViewMode === 'table' ? (
+                /* TABLE VIEW: Explicit columns including Thanh Toán & Ghi Chú */
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-slate-50/80 border-b border-slate-100">
+                      <TableRow>
+                        <TableHead className="text-[11px] font-black uppercase text-slate-600">Kỳ (Tháng)</TableHead>
+                        <TableHead className="text-[11px] font-black uppercase text-slate-600">Tổng NS Khối</TableHead>
+                        <TableHead className="text-[11px] font-black uppercase text-slate-600">NS Thẻ C.Ty</TableHead>
+                        <TableHead className="text-[11px] font-black uppercase text-slate-600">NS Chạy Ngoài</TableHead>
+                        <TableHead className="text-[11px] font-black uppercase text-emerald-700">Đối Ứng Duyệt</TableHead>
+                        {/* CỘT THANH TOÁN (3 trạng thái: Chưa thanh toán / Đã thanh toán / Từ chối) */}
+                        <TableHead className="text-[11px] font-black uppercase text-slate-700 min-w-[150px]">Thanh Toán</TableHead>
+                        {/* CỘT GHI CHÚ */}
+                        <TableHead className="text-[11px] font-black uppercase text-slate-700 min-w-[130px]">Ghi Chú</TableHead>
+                        <TableHead className="text-[11px] font-black uppercase text-slate-600">Trạng Thái Duyệt</TableHead>
+                        <TableHead className="text-right text-[11px] font-black uppercase text-slate-600">Thao Tác</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {blockHistory.map((item) => {
+                        const isCurrent = item.month === currentMarketingPeriod;
+                        const hasApproved = (item.approvedReciprocalBudget || 0) > 0;
+                        const paymentInfo = getPaymentStatusInfo(item.paymentStatus);
+
+                        return (
+                          <TableRow 
+                            key={item.id}
+                            className={`transition-colors hover:bg-slate-50/80 ${
+                              item.month === selectedMonth ? 'bg-amber-50/40' : ''
+                            }`}
+                          >
+                            {/* Kỳ (Tháng) */}
+                            <TableCell className="whitespace-nowrap py-3.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono font-bold text-xs text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
+                                  {item.month}
+                                </span>
+                                {isCurrent && (
+                                  <Badge className="bg-amber-500 text-white text-[9px] font-black py-0 px-1.5">
+                                    Hiện tại
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+
+                            {/* Tổng NS Khối */}
+                            <TableCell className="whitespace-nowrap py-3.5 font-mono text-xs font-semibold text-slate-700">
+                              {formatCurrency(item.totalBlockBudget || 0)}
+                            </TableCell>
+
+                            {/* NS Qua Thẻ C.Ty */}
+                            <TableCell className="whitespace-nowrap py-3.5 font-mono text-xs font-semibold text-indigo-700">
+                              {formatCurrency(item.companyCardBudget || 0)}
+                            </TableCell>
+
+                            {/* NS Chạy Ngoài */}
+                            <TableCell className="whitespace-nowrap py-3.5 font-mono text-xs font-bold text-amber-700">
+                              {formatCurrency(item.externalBudget || 0)}
+                            </TableCell>
+
+                            {/* Đối Ứng Được Duyệt */}
+                            <TableCell className="whitespace-nowrap py-3.5 font-mono text-xs font-black text-emerald-800">
+                              {hasApproved ? (
+                                formatCurrency(item.approvedReciprocalBudget)
+                              ) : (
+                                <span className="text-slate-400 font-normal italic">—</span>
+                              )}
+                            </TableCell>
+
+                            {/* CỘT THANH TOÁN (Chỉ xem trạng thái; chỉnh sửa trạng thái được thực hiện trong Quản trị đối ứng) */}
+                            <TableCell className="whitespace-nowrap py-3.5">
+                              <Badge className={paymentInfo.badgeClass}>
+                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${paymentInfo.dotClass}`} />
+                                {paymentInfo.label}
+                              </Badge>
+                            </TableCell>
+
+                            {/* CỘT GHI CHÚ */}
+                            <TableCell className="py-3.5 max-w-[180px]">
+                              {item.note ? (
+                                <div className="text-xs text-slate-700 truncate" title={item.note}>
+                                  {item.note}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-slate-400 italic">—</span>
+                              )}
+                            </TableCell>
+
+                            {/* Trạng Thái Duyệt */}
+                            <TableCell className="whitespace-nowrap py-3.5">
+                              <Badge 
+                                className={
+                                  hasApproved
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] font-bold'
+                                    : 'bg-amber-100 text-amber-800 border-amber-200 text-[10px] font-bold'
+                                }
+                              >
+                                {hasApproved ? 'Đã duyệt' : 'Chờ duyệt'}
+                              </Badge>
+                            </TableCell>
+
+                            {/* Thao Tác */}
+                            <TableCell className="text-right whitespace-nowrap py-3.5">
+                              <div className="flex items-center justify-end gap-1">
+                                {hasEditPerm && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setSelectedMonth(item.month);
+                                      setEditingRecordId(item.id);
+                                      setCompanyCardBudgetInput(formatCurrencyInput(String(item.companyCardBudget || 0)));
+                                      setExternalBudgetInput(formatCurrencyInput(String(item.externalBudget || 0)));
+                                      setNoteInput(item.note || '');
+                                      toast.info(`Đang chỉnh sửa bản ghi kỳ ${item.month}`);
+                                    }}
+                                    className="h-7 w-7 p-0 text-amber-700 hover:bg-amber-50 rounded-lg"
+                                    title="Chỉnh sửa"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </Button>
+                                )}
+                                {hasDeletePerm && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setRecordToDelete(item);
+                                      setIsDeleteDialogOpen(true);
+                                    }}
+                                    className="h-7 w-7 p-0 text-rose-600 hover:bg-rose-50 rounded-lg"
+                                    title="Xóa"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
+                /* CARDS VIEW: Enhanced with Payment Status & Note */
                 <div className="divide-y divide-slate-100">
                   {blockHistory.map((item) => {
                     const isCurrent = item.month === currentMarketingPeriod;
                     const hasApproved = (item.approvedReciprocalBudget || 0) > 0;
+                    const paymentInfo = getPaymentStatusInfo(item.paymentStatus);
 
                     return (
                       <div 
@@ -618,7 +974,7 @@ export function BlockReciprocalRegistration({
                         }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-2.5">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="text-base font-black font-mono text-slate-900 bg-slate-100 px-3 py-1 rounded-xl">
                               Tháng {item.month}
                             </span>
@@ -636,26 +992,34 @@ export function BlockReciprocalRegistration({
                             >
                               {hasApproved ? 'Đã duyệt đối ứng' : 'Chờ Admin duyệt'}
                             </Badge>
+
+                            {/* Payment Status in Card Header (Read-only badge in Block Management) */}
+                            <Badge className={paymentInfo.badgeClass}>
+                              <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${paymentInfo.dotClass}`} />
+                              {paymentInfo.label}
+                            </Badge>
                           </div>
 
                           <div className="flex items-center gap-1.5 self-end sm:self-auto">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                setSelectedMonth(item.month);
-                                setEditingRecordId(item.id);
-                                setCompanyCardBudgetInput(formatCurrencyInput(String(item.companyCardBudget || 0)));
-                                setExternalBudgetInput(formatCurrencyInput(String(item.externalBudget || 0)));
-                                setNoteInput(item.note || '');
-                                toast.info(`Đang chỉnh sửa bản ghi kỳ ${item.month}`);
-                              }}
-                              className="h-8 text-xs font-bold text-amber-700 hover:bg-amber-100 rounded-xl"
-                            >
-                              <Edit3 className="w-3.5 h-3.5 mr-1" /> Sửa
-                            </Button>
+                            {hasEditPerm && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setSelectedMonth(item.month);
+                                  setEditingRecordId(item.id);
+                                  setCompanyCardBudgetInput(formatCurrencyInput(String(item.companyCardBudget || 0)));
+                                  setExternalBudgetInput(formatCurrencyInput(String(item.externalBudget || 0)));
+                                  setNoteInput(item.note || '');
+                                  toast.info(`Đang chỉnh sửa bản ghi kỳ ${item.month}`);
+                                }}
+                                className="h-8 text-xs font-bold text-amber-700 hover:bg-amber-100 rounded-xl"
+                              >
+                                <Edit3 className="w-3.5 h-3.5 mr-1" /> Sửa
+                              </Button>
+                            )}
 
-                            {canRegister && (
+                            {hasDeletePerm && (
                               <Button
                                 size="sm"
                                 variant="ghost"
@@ -710,10 +1074,12 @@ export function BlockReciprocalRegistration({
                           </div>
                         </div>
 
+                        {/* Note display */}
                         {item.note && (
-                          <p className="text-xs text-slate-500 italic mt-2.5 px-1">
-                            Ghi chú: "{item.note}"
-                          </p>
+                          <div className="mt-2.5 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 flex items-start gap-2">
+                            <span className="font-bold text-slate-500 shrink-0">Ghi chú:</span>
+                            <span className="italic">{item.note}</span>
+                          </div>
                         )}
 
                         <div className="flex items-center justify-between text-[10px] text-slate-400 mt-2.5 px-1">
