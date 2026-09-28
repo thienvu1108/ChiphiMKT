@@ -817,7 +817,7 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
                   </Select>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:shrink-0">
                   {/* View Mode Toggle */}
                   <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
                     <button

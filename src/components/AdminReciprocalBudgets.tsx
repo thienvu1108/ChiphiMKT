@@ -747,10 +747,10 @@ export function AdminReciprocalBudgets({
       <Card className="border-none shadow-sm overflow-hidden bg-white">
         <div className="h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600 w-full" />
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Receipt className="w-5 h-5 text-amber-600" />
-              <CardTitle className="text-xl font-black text-slate-900">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+              <Receipt className="w-5 h-5 text-amber-600 shrink-0" />
+              <CardTitle className="text-lg sm:text-xl font-black text-slate-900 break-words">
                 Quản trị Ngân sách Đối ứng
               </CardTitle>
             </div>
@@ -759,12 +759,12 @@ export function AdminReciprocalBudgets({
             </CardDescription>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={handleExportExcel}
-              className="h-9 text-xs font-bold text-emerald-700 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 rounded-xl"
+              className="h-11 sm:h-9 text-xs font-bold text-emerald-700 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 rounded-xl"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 mr-1.5 text-emerald-600" /> Xuất Excel
             </Button>
@@ -774,7 +774,7 @@ export function AdminReciprocalBudgets({
               size="sm"
               onClick={handleSyncBlockBudgets}
               title="Đồng bộ lại Tổng ngân sách Khối từ danh mục Ngân sách khối mới nhất"
-              className="h-9 text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 rounded-xl"
+              className="h-11 sm:h-9 text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 rounded-xl"
             >
               <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Đồng bộ số liệu
             </Button>
@@ -783,7 +783,7 @@ export function AdminReciprocalBudgets({
               <Button
                 size="sm"
                 onClick={() => handleOpenFormModal()}
-                className="h-9 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-md shadow-amber-200"
+                className="h-11 sm:h-9 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-md shadow-amber-200"
               >
                 <Plus className="w-4 h-4 mr-1" /> Thêm Bản Ghi Đối Ứng
               </Button>

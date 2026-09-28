@@ -15384,7 +15384,7 @@ export default function App() {
 
         {/* Main Horizontal Menu Bar */}
         <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 p-1.5 sm:p-2 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide">
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-max">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-max [&>*]:shrink-0">
             {menuItems.map((item) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.value;
@@ -15432,7 +15432,7 @@ export default function App() {
               }}
             >
               <div className="bg-white/80 backdrop-blur-md border border-slate-200 p-2 rounded-2xl shadow-lg border-t-0 rounded-t-none shadow-slate-200/40 overflow-x-auto scrollbar-hide">
-                <div className="flex items-center gap-2 min-w-max">
+                <div className="flex items-center gap-2 min-w-max [&>*]:shrink-0">
                   {(isAdmin || isSuperAdmin) && (
                     <Button 
                       variant={adminSubTab === 'register' ? 'secondary' : 'ghost'} 
@@ -15573,7 +15573,7 @@ export default function App() {
               }}
             >
               <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 p-2 rounded-2xl shadow-lg border-t-0 rounded-t-none shadow-slate-200/40 overflow-x-auto scrollbar-hide">
-                <div className="flex items-center gap-2 min-w-max">
+                <div className="flex items-center gap-2 min-w-max [&>*]:shrink-0">
                   <Button 
                     variant={blockSubTab === 'block-teams' ? 'secondary' : 'ghost'} 
                     size="sm" 
@@ -15639,7 +15639,7 @@ export default function App() {
               }}
             >
               <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 p-2 rounded-2xl shadow-lg border-t-0 rounded-t-none shadow-slate-200/40 overflow-x-auto scrollbar-hide">
-                <div className="flex items-center gap-2 min-w-max">
+                <div className="flex items-center gap-2 min-w-max [&>*]:shrink-0">
                   <Button 
                     variant={bankdSubTab === 'bankd-info' ? 'secondary' : 'ghost'} 
                     size="sm" 
@@ -16136,7 +16136,7 @@ export default function App() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
                 <div className="relative z-10 space-y-4">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="bg-white/20 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-wider inline-block">
                           Hệ thống Quản lý Khối
@@ -16147,8 +16147,8 @@ export default function App() {
                           </span>
                         )}
                       </div>
-                      <h2 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
-                        Quản lý Khối: <span className="underline decoration-indigo-300 decoration-3">{currentActiveBlock ? `${getBlockDisplayName(currentActiveBlock)} (${currentActiveBlock.blockCode})` : "Chưa chọn Khối"}</span>
+                      <h2 className="text-lg sm:text-2xl lg:text-3xl font-black tracking-tight mt-1.5 leading-snug break-words">
+                        Quản lý Khối: <span className="underline decoration-indigo-300 decoration-2 sm:decoration-3 underline-offset-4">{currentActiveBlock ? `${getBlockDisplayName(currentActiveBlock)} (${currentActiveBlock.blockCode})` : "Chưa chọn Khối"}</span>
                       </h2>
                     </div>
                     {/* Bộ lựa chọn Khối thao tác duy nhất cho toàn bộ hệ thống Quản lý Khối */}
@@ -16169,7 +16169,7 @@ export default function App() {
                             value={currentActiveBlock?.id || (userAllowedBlocks[0]?.id || '')} 
                             onValueChange={(val) => setSelectedBlockId(val)}
                           >
-                            <SelectTrigger className="bg-white text-slate-900 border-none rounded-xl font-bold h-10 text-xs shadow-sm hover:bg-slate-50 transition-colors">
+                            <SelectTrigger className="bg-white text-slate-900 border-none rounded-xl font-bold h-10 text-xs shadow-sm hover:bg-slate-50 transition-colors w-full min-w-0 max-w-full">
                               <SelectValue placeholder="Chọn khối quản lý...">
                                 <span className="truncate block text-left flex-1 font-sans">
                                   {currentActiveBlock ? `${getBlockDisplayName(currentActiveBlock)} (${currentActiveBlock.blockCode})` : "Chọn một khối..."}
@@ -16214,7 +16214,7 @@ export default function App() {
                       )}
                     </div>
                   </div>
-                  <p className="text-indigo-100 text-sm max-w-2xl font-medium font-sans">
+                  <p className="text-indigo-100 text-xs sm:text-sm max-w-2xl font-medium font-sans">
                     Xem & quản lý các nhóm trực thuộc khối, kiểm soát đăng ký ngân sách, và theo dõi báo cáo chi phí thực tế tự động cập nhật của các nhóm.
                   </p>
 
@@ -16233,8 +16233,8 @@ export default function App() {
 
               {/* Sub tabs style */}
               <Tabs value={blockSubTab} onValueChange={setBlockSubTab} className="space-y-6">
-                <div className="overflow-x-auto w-full max-w-full pb-1 scrollbar-none">
-                  <TabsList className="bg-slate-100 p-1 rounded-2xl h-auto inline-flex shadow-sm min-w-max">
+                <div className="overflow-x-auto w-full max-w-full pb-1 scrollbar-none -mx-1 px-1">
+                  <TabsList className="bg-slate-100 p-1 rounded-2xl h-auto inline-flex shadow-sm min-w-max gap-1">
                     <TabsTrigger value="block-teams" className="rounded-xl px-4 sm:px-5 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
                       <Users className="w-4 h-4 mr-2" /> Danh sách Nhóm
                     </TabsTrigger>

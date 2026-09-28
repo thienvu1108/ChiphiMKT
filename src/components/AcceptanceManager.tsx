@@ -1450,14 +1450,14 @@ export const AcceptanceManager = React.memo(({
     <div className="space-y-4">
       {/* 🌟 Header & Action Toolbar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="bg-indigo-600 text-white p-2.5 rounded-2xl shadow-md shadow-indigo-100">
+        <div className="flex items-start sm:items-center gap-3 min-w-0">
+          <div className="bg-indigo-600 text-white p-2.5 rounded-2xl shadow-md shadow-indigo-100 shrink-0">
             <FileSpreadsheet className="w-6 h-6" />
           </div>
-          <div>
-            <h1 className="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-              <span>Báo cáo Nghiệm thu Marketing</span>
-              <Badge className="bg-indigo-50 text-indigo-700 border-none font-extrabold text-[10px] px-2 py-0.5">
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="break-words">Báo cáo Nghiệm thu Marketing</span>
+              <Badge className="bg-indigo-50 text-indigo-700 border-none font-extrabold text-[10px] px-2 py-0.5 shrink-0">
                 Chuẩn công thức VAT & Kỳ
               </Badge>
             </h1>
@@ -1467,11 +1467,11 @@ export const AcceptanceManager = React.memo(({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2 w-full md:w-auto">
           {canCreate && (
             <Button
               onClick={handleAddDraftRow}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs h-9 px-3.5 rounded-2xl shadow-md shadow-indigo-100 flex items-center gap-1.5"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs h-11 sm:h-9 px-3.5 rounded-2xl shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5"
             >
               <Plus className="w-4 h-4" /> Thêm dòng
             </Button>
@@ -1480,7 +1480,7 @@ export const AcceptanceManager = React.memo(({
           <Button
             variant="outline"
             onClick={handleExportExcel}
-            className="border-slate-200 text-slate-700 hover:bg-slate-50 font-black text-xs h-9 px-3 rounded-2xl flex items-center gap-1.5"
+            className="border-slate-200 text-slate-700 hover:bg-slate-50 font-black text-xs h-11 sm:h-9 px-3 rounded-2xl flex items-center justify-center gap-1.5"
           >
             <Download className="w-3.5 h-3.5" /> Xuất Excel
           </Button>
@@ -1489,7 +1489,7 @@ export const AcceptanceManager = React.memo(({
             <Button
               variant="outline"
               onClick={() => setIsImportAcceptancesDialogOpen(true)}
-              className="border-slate-200 text-indigo-600 hover:bg-indigo-50 font-black text-xs h-9 px-3 rounded-2xl flex items-center gap-1.5"
+              className="border-slate-200 text-indigo-600 hover:bg-indigo-50 font-black text-xs h-11 sm:h-9 px-3 rounded-2xl flex items-center justify-center gap-1.5"
             >
               <Upload className="w-3.5 h-3.5" /> Nhập Excel
             </Button>
@@ -1501,7 +1501,7 @@ export const AcceptanceManager = React.memo(({
               onClick={handleSyncBlocks}
               disabled={isSyncingBlocks}
               title="Đồng bộ thông tin Khối cho các bản ghi dựa trên danh sách Team/Phòng kinh doanh"
-              className="border-indigo-200 text-indigo-700 bg-indigo-50/60 hover:bg-indigo-100 font-black text-xs h-9 px-3 rounded-2xl flex items-center gap-1.5"
+              className="border-indigo-200 text-indigo-700 bg-indigo-50/60 hover:bg-indigo-100 font-black text-xs h-11 sm:h-9 px-3 rounded-2xl flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncingBlocks ? 'animate-spin text-indigo-600' : ''}`} />
               {isSyncingBlocks ? 'Đang đồng bộ...' : 'Đồng bộ Khối'}
@@ -1620,8 +1620,8 @@ export const AcceptanceManager = React.memo(({
         </CardHeader>
 
         {/* 🧭 Horizontal Navigation & Column Jump Toolbar */}
-        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex flex-wrap items-center gap-1.5">
+        <div className="bg-slate-50 border-b border-slate-200 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none -mx-1 px-1 pb-0.5 sm:flex-wrap sm:overflow-visible">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1 mr-1">
               <MoveHorizontal className="w-3.5 h-3.5 text-indigo-600" /> Nhảy tới cột:
             </span>

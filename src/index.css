@@ -264,3 +264,18 @@ body {
     text-overflow: ellipsis;
   }
 }
+
+/* ------------------------------------------------------------
+   Global mobile polish: horizontal tab strips + dense toolbars
+   ------------------------------------------------------------ */
+@media (max-width: 767px) {
+  /* Children of scroll strips never shrink (readable labels) */
+  .min-w-max > * {
+    flex-shrink: 0;
+  }
+
+  /* Page/card titles that sit next to badges: wrap cleanly */
+  [data-slot="card-title"] {
+    overflow-wrap: anywhere;
+  }
+}
