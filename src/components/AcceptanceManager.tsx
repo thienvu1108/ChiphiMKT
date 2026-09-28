@@ -47,6 +47,8 @@ import { AcceptanceRow } from './acceptance/AcceptanceRow';
 import { AcceptanceFooter } from './acceptance/AcceptanceFooter';
 import { AcceptanceDialogs } from './acceptance/AcceptanceDialogs';
 import { AcceptanceSearchableSelect } from './acceptance/AcceptanceSearchableSelect';
+import { AcceptanceMobileCard } from './acceptance/AcceptanceMobileCard';
+import { MobileViewToggle, MobileCardList, MobileCardEmpty, MobileViewMode } from './mobile/MobileCards';
 import { 
   parseCurrencyFormula, 
   getRowComputed, 
@@ -201,6 +203,8 @@ export const AcceptanceManager = React.memo(({
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
 
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  // Mobile (< md) display mode: card list (default) or full table
+  const [mobileView, setMobileView] = useState<MobileViewMode>('cards');
   const [historyTargetRecord, setHistoryTargetRecord] = useState<any>(null);
 
   // Debounce search
@@ -1741,9 +1745,55 @@ export const AcceptanceManager = React.memo(({
             </div>
           </div>
 
+          {/* 📱 Mobile view toggle + card list (< md). Desktop table below is unchanged. */}
+          <div className="md:hidden px-3 pt-3">
+            <MobileViewToggle mode={mobileView} onChange={setMobileView} />
+          </div>
+          {mobileView === 'cards' && (
+            <>
+              {draftRows.length > 0 && (
+                <div className="md:hidden mx-3 mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-900 flex flex-wrap items-center justify-between gap-2">
+                  <span>Có {draftRows.length} dòng nháp đang nhập.</span>
+                  <button type="button" onClick={() => setMobileView('table')} className="min-h-10 px-3 rounded-lg bg-white border border-amber-300 font-bold">Mở dạng bảng để nhập</button>
+                </div>
+              )}
+              {displayedRecords.length === 0 ? (
+                <MobileCardEmpty>Không có bản ghi nghiệm thu nào phù hợp với bộ lọc hiện tại.</MobileCardEmpty>
+              ) : (
+                <MobileCardList>
+                  {paginatedRecords.map((item: any, idx: number) => {
+                    const globalIdx = (pageSize === 'all' ? 0 : (currentPage - 1) * pageSize) + idx;
+                    return (
+                      <AcceptanceMobileCard
+                        key={item.id}
+                        item={item}
+                        index={globalIdx}
+                        isSelected={selectedAcceptanceIds.includes(item.id)}
+                        teams={teams}
+                        projects={projects}
+                        blocks={blocks}
+                        teamIdSet={teamIdSet}
+                        projectIdSet={projectIdSet}
+                        findTeam={teamLookup.findTeam}
+                        findProject={projectLookup.findProject}
+                        formatCurrency={formatCurrency}
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        onSelectRow={handleSelectRow}
+                        onEdit={(row) => { setMobileView('table'); handleStartEdit(row); }}
+                        onDelete={handleOpenDeleteModal}
+                        onOpenHistory={handleOpenHistoryModal}
+                      />
+                    );
+                  })}
+                </MobileCardList>
+              )}
+            </>
+          )}
+
           <div
             ref={tableContainerRef}
-            className="overflow-x-auto max-h-[72vh] cursor-grab border-b border-slate-200 select-none scrollbar-thin scrollbar-thumb-slate-300"
+            className={`overflow-x-auto max-h-[72vh] cursor-grab border-b border-slate-200 select-none scrollbar-thin scrollbar-thumb-slate-300 ${mobileView === 'cards' ? 'hidden md:block' : ''}`}
           >
             <table className="w-full text-left border-collapse min-w-[2400px] caption-bottom text-sm">
               <AcceptanceTableHeader

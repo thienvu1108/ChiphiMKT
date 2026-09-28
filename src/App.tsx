@@ -142,6 +142,7 @@ import { AdminReciprocalBudgets } from './components/AdminReciprocalBudgets';
 import { BanKdManager, BanKd } from './components/BanKdManager';
 import { BanKdManagementView } from './components/BanKdManagementView';
 import { GitHubBackupManager } from './components/GitHubBackupManager';
+import { MobileViewToggle, MobileCardList, MobileCardEmpty, MobileCard, MobileCardAction, MobileViewMode } from './components/mobile/MobileCards';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, BarChart, Bar, Legend, Cell, PieChart as RePieChart, Pie,
@@ -3453,6 +3454,7 @@ export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [budgetMobileView, setBudgetMobileView] = useState<MobileViewMode>('cards');
   const [isWebView, setIsWebView] = useState(false);
   const [showAuthHelper, setShowAuthHelper] = useState(false);
 
@@ -20911,7 +20913,100 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div className="rounded-xl border border-slate-100 overflow-x-auto shadow-sm">
+                        {/* 📱 Mobile (< md): budget cards with the same row handlers; desktop table unchanged */}
+                        <MobileViewToggle mode={budgetMobileView} onChange={setBudgetMobileView} />
+                        {budgetMobileView === 'cards' && (
+                          adminFilteredBudgets.length === 0 ? (
+                            <MobileCardEmpty>Không tìm thấy dữ liệu ngân sách nào phù hợp</MobileCardEmpty>
+                          ) : (
+                            <MobileCardList className="p-0">
+                              {paginatedAdminFilteredBudgets.map(b => {
+                                const bcNT = baoCaoNTMap[b.id] || 0;
+                                const rate = b.amount > 0 ? (bcNT / b.amount) * 100 : 0;
+                                const isSel = selectedBudgetIds.includes(b.id);
+                                const teamCode = teams.find(t => t.id === b.teamId || t.name === (teamMap[b.teamId] || b.teamName))?.teamCode || '';
+                                return (
+                                  <MobileCard
+                                    key={b.id}
+                                    selected={isSel}
+                                    leading={
+                                      <label className="shrink-0 -m-2 p-2 flex items-center">
+                                        <input
+                                          type="checkbox"
+                                          className="w-5 h-5 rounded border-slate-300 accent-indigo-600"
+                                          checked={isSel}
+                                          onChange={(e) => {
+                                            if (e.target.checked) {
+                                              setSelectedBudgetIds(prev => [...prev, b.id]);
+                                            } else {
+                                              setSelectedBudgetIds(prev => prev.filter(id => id !== b.id));
+                                            }
+                                          }}
+                                        />
+                                      </label>
+                                    }
+                                    title={projectMap[b.projectId] || b.projectName}
+                                    subtitle={<>{teamMap[b.teamId] || b.teamName}{teamCode ? ` · ${teamCode}` : ''}</>}
+                                    highlightLabel="Ngân sách"
+                                    highlightValue={`${b.amount.toLocaleString()}đ`}
+                                    highlightClassName="text-slate-900"
+                                    badges={<>
+                                      <Badge variant="outline" className="text-[11px] font-black border-slate-200 bg-white text-slate-600 rounded-md">W{b.weekNumber}</Badge>
+                                      <span className="text-[11px] font-bold text-slate-500">{getMarketingMonthDisplayRange(b.month)}</span>
+                                    </>}
+                                    fields={[
+                                      { label: 'Báo cáo NT', value: `${bcNT.toLocaleString()}đ`, className: 'font-mono text-indigo-600' },
+                                      { label: 'Tỉ lệ', value: `${rate.toFixed(1)}%`, className: 'font-mono text-emerald-600' },
+                                      { label: 'GĐKD', value: extractGDKD(teamMap[b.teamId] || b.teamName || '') || '-' },
+                                      {
+                                        label: 'Người triển khai',
+                                        value: b.subBudgets && b.subBudgets.length > 1 ? (
+                                          <button
+                                            type="button"
+                                            className="text-indigo-700 underline underline-offset-2 font-bold min-h-8"
+                                            onClick={() => handleOpenHistory(b, `${resolveProjectName(b.projectId, b.projectName)} - ${resolveTeamName(b.teamId, b.teamName)}`)}
+                                          >
+                                            👥 {b.subBudgets.length} người
+                                          </button>
+                                        ) : (b.implementerName || 'Chưa rõ'),
+                                      },
+                                      { label: 'Ngày ĐK', value: safeFormat(b.createdAt, 'HH:mm dd/MM/yyyy') || '-', full: true, className: 'font-mono text-slate-500' },
+                                    ]}
+                                    actions={<>
+                                      <MobileCardAction onClick={() => handleOpenHistory(b, `${b.projectName} - ${b.teamName}`)}>
+                                        <History className="w-4 h-4" /> Lịch sử
+                                      </MobileCardAction>
+                                      {(isAdmin || isMod || isAccountant) && (
+                                        <MobileCardAction tone="primary" onClick={() => handleOpenEditBudget(b)}>
+                                          <Edit2 className="w-4 h-4" /> Điều chỉnh
+                                        </MobileCardAction>
+                                      )}
+                                      {(isAdmin || isMod || isAccountant) && (
+                                        <MobileCardAction tone="danger" onClick={() => handleDeleteBudget(b.id, b.projectName)}>
+                                          <Trash2 className="w-4 h-4" /> Xóa
+                                        </MobileCardAction>
+                                      )}
+                                    </>}
+                                  />
+                                );
+                              })}
+                              {(() => {
+                                const totalBudget = adminFilteredBudgets.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+                                const totalBaoCaoNT = adminFilteredBudgets.reduce((acc, curr) => acc + (baoCaoNTMap[curr.id] || 0), 0);
+                                const totalRate = totalBudget > 0 ? (totalBaoCaoNT / totalBudget) * 100 : 0;
+                                return (
+                                  <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3.5 grid grid-cols-3 gap-2 text-center">
+                                    <div className="col-span-3 text-[11px] font-black uppercase text-slate-500 text-left">Tổng cộng ({adminFilteredBudgets.length} bản ghi)</div>
+                                    <div><div className="text-[11px] font-bold text-slate-400">Ngân sách</div><div className="text-xs font-black font-mono text-slate-900">{totalBudget.toLocaleString()}đ</div></div>
+                                    <div><div className="text-[11px] font-bold text-slate-400">Báo cáo NT</div><div className="text-xs font-black font-mono text-indigo-700">{totalBaoCaoNT.toLocaleString()}đ</div></div>
+                                    <div><div className="text-[11px] font-bold text-slate-400">Tỉ lệ</div><div className="text-xs font-black font-mono text-emerald-700">{totalRate.toFixed(1)}%</div></div>
+                                  </div>
+                                );
+                              })()}
+                            </MobileCardList>
+                          )
+                        )}
+                        <div className={`rounded-xl border border-slate-100 overflow-x-auto shadow-sm ${budgetMobileView === 'cards' ? 'hidden md:block' : ''}`}>
                           <Table className="min-w-[900px] table-fixed w-full">
                             <TableHeader className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
                               <TableRow className="h-10 text-[9px] font-black uppercase text-slate-500 border-b border-slate-200">
