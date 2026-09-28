@@ -115,7 +115,7 @@ export const AcceptanceDialogs: React.FC<DialogsProps> = ({
     <>
       {/* 📊 1. Multi-Value Sum Calculator Dialog */}
       <Dialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen}>
-        <DialogContent className="max-w-md rounded-3xl p-6 bg-white border-none shadow-2xl">
+        <DialogContent className="sm:max-w-md rounded-3xl p-6 bg-white border-none shadow-2xl">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
@@ -202,7 +202,7 @@ export const AcceptanceDialogs: React.FC<DialogsProps> = ({
 
       {/* 🔒 2. Finalize Acceptance Confirmation Dialog */}
       <Dialog open={isFinalizeDialogOpen} onOpenChange={setIsFinalizeDialogOpen}>
-        <DialogContent className="max-w-sm rounded-3xl p-6 bg-white border-none shadow-2xl">
+        <DialogContent className="sm:max-w-sm rounded-3xl p-6 bg-white border-none shadow-2xl">
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mx-auto">
               <ShieldCheck className="w-6 h-6" />
@@ -236,7 +236,7 @@ export const AcceptanceDialogs: React.FC<DialogsProps> = ({
 
       {/* 🗑️ 3. Delete Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-sm rounded-3xl p-6 bg-white border-none shadow-2xl">
+        <DialogContent className="sm:max-w-sm rounded-3xl p-6 bg-white border-none shadow-2xl">
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 mx-auto">
               <Trash2 className="w-6 h-6" />
@@ -270,7 +270,7 @@ export const AcceptanceDialogs: React.FC<DialogsProps> = ({
 
       {/* 🗑️ 4. Bulk Delete Dialog */}
       <Dialog open={isBulkDeleteDialogOpen} onOpenChange={setIsBulkDeleteDialogOpen}>
-        <DialogContent className="max-w-sm rounded-3xl p-6 bg-white border-none shadow-2xl">
+        <DialogContent className="sm:max-w-sm rounded-3xl p-6 bg-white border-none shadow-2xl">
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 mx-auto">
               <Trash2 className="w-6 h-6" />
@@ -304,7 +304,7 @@ export const AcceptanceDialogs: React.FC<DialogsProps> = ({
 
       {/* 🗑️ 5. Final Delete Dialog */}
       <Dialog open={isDeleteFinalDialogOpen} onOpenChange={setIsDeleteFinalDialogOpen}>
-        <DialogContent className="max-w-sm rounded-3xl p-6 bg-white border-none shadow-2xl">
+        <DialogContent className="sm:max-w-sm rounded-3xl p-6 bg-white border-none shadow-2xl">
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 mx-auto">
               <Trash2 className="w-6 h-6" />

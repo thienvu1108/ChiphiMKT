@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { DraggableTableContainer } from './DraggableTableContainer';
+import { MobileViewToggle, MobileCardList, MobileCardEmpty, MobileCard, MobileCardAction, MobileViewMode } from './mobile/MobileCards';
 
 interface AdminReciprocalBudgetsProps {
   reciprocalBudgets: any[];
@@ -189,6 +190,7 @@ export function AdminReciprocalBudgets({
   const hasDeletePerm = canDelete !== undefined ? canDelete : (isAdmin || isSuperAdmin || isAccountant);
 
   // Filters
+  const [mobileView, setMobileView] = useState<MobileViewMode>('cards');
   const [filterBlock, setFilterBlock] = useState<string>('all');
   const [filterMonth, setFilterMonth] = useState<string>('all');
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<string>('all');
@@ -936,6 +938,89 @@ export function AdminReciprocalBudgets({
         </CardHeader>
 
         <CardContent className="p-0">
+          {/* 📱 Mobile (< md): card list with the same actions/handlers as the table rows */}
+          <div className="md:hidden px-3 pt-3">
+            <MobileViewToggle mode={mobileView} onChange={setMobileView} />
+          </div>
+          {mobileView === 'cards' && (
+            sortedRecords.length === 0 ? (
+              <MobileCardEmpty>Không tìm thấy bản ghi ngân sách đối ứng nào</MobileCardEmpty>
+            ) : (
+              <MobileCardList>
+                {sortedRecords.map((item, index) => {
+                  const directorName = item.directorName || getBlockDirectorName(item.blockId || item.blockCode, '');
+                  const isApproved = (item.approvedReciprocalBudget || 0) > 0;
+                  const payInfo = getPaymentStatusInfo(item.paymentStatus);
+                  return (
+                    <MobileCard
+                      key={item.id}
+                      leading={<span className="shrink-0 text-xs font-bold text-slate-400 w-6 text-center pt-0.5">{index + 1}</span>}
+                      title={<span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />{item.blockName || item.blockCode}</span>}
+                      subtitle={<>{item.month}{directorName ? ` · ${directorName}` : ''}</>}
+                      highlightLabel="Đối ứng duyệt"
+                      highlightValue={isApproved ? formatCurrency(item.approvedReciprocalBudget) : '0 đ'}
+                      highlightClassName={isApproved ? 'text-emerald-700' : 'text-slate-400'}
+                      badges={<>
+                        <Badge className={isApproved ? 'bg-emerald-100 text-emerald-800 border-emerald-200 text-[11px] font-bold' : 'bg-amber-100 text-amber-800 border-amber-200 text-[11px] font-bold'}>
+                          {isApproved ? 'Đã duyệt' : 'Chờ duyệt'}
+                        </Badge>
+                        {!hasEditPerm && (
+                          <Badge className={payInfo.badgeClass}>
+                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${payInfo.dotClass}`} />
+                            {payInfo.label}
+                          </Badge>
+                        )}
+                      </>}
+                      fields={[
+                        { label: 'Tổng NS Khối', value: formatCurrency(item.totalBlockBudget || 0), className: 'font-mono' },
+                        { label: 'Qua thẻ Cty', value: formatCurrency(item.companyCardBudget || 0), className: 'font-mono text-indigo-700' },
+                        { label: 'Chạy ngoài', value: formatCurrency(item.externalBudget || 0), className: 'font-mono text-amber-700' },
+                        ...(item.blockCode ? [{ label: 'Mã khối', value: item.blockCode, className: 'font-mono' }] : []),
+                        ...(item.note ? [{ label: 'Ghi chú', value: item.note, full: true, className: 'font-medium text-slate-600' }] : []),
+                        ...(hasEditPerm ? [{
+                          label: 'Thanh toán',
+                          full: true,
+                          value: (
+                            <Select value={payInfo.value} onValueChange={(val) => handleQuickUpdatePaymentStatus(item, val)}>
+                              <SelectTrigger className={`mt-1 h-10 w-full text-xs font-bold rounded-xl border ${payInfo.badgeClass}`}>
+                                <div className="flex items-center gap-1.5 truncate">
+                                  <span className={`w-2 h-2 rounded-full shrink-0 ${payInfo.dotClass}`} />
+                                  <span className="truncate">{payInfo.label}</span>
+                                </div>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unpaid" className="text-xs font-semibold text-amber-800">Chưa thanh toán</SelectItem>
+                                <SelectItem value="paid" className="text-xs font-semibold text-emerald-800">Đã thanh toán</SelectItem>
+                                <SelectItem value="rejected" className="text-xs font-semibold text-rose-800">Từ chối</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ),
+                        }] : []),
+                      ]}
+                      actions={(hasEditPerm || hasDeletePerm) ? <>
+                        {hasEditPerm && (
+                          <MobileCardAction onClick={() => handleOpenApproval(item)} className="text-emerald-700 border-emerald-200">
+                            <Edit3 className="w-4 h-4" /> Duyệt
+                          </MobileCardAction>
+                        )}
+                        {hasEditPerm && (
+                          <MobileCardAction tone="primary" onClick={() => handleOpenFormModal(item)}>
+                            <Edit3 className="w-4 h-4" /> Sửa
+                          </MobileCardAction>
+                        )}
+                        {hasDeletePerm && (
+                          <MobileCardAction tone="danger" onClick={() => { setRecordToDelete(item); setIsDeleteDialogOpen(true); }}>
+                            <Trash2 className="w-4 h-4" /> Xóa
+                          </MobileCardAction>
+                        )}
+                      </> : undefined}
+                    />
+                  );
+                })}
+              </MobileCardList>
+            )
+          )}
+          <div className={mobileView === 'cards' ? 'hidden md:block' : ''}>
           <DraggableTableContainer className="rounded-none border-0 bg-white">
             <Table>
               <TableHeader className="bg-slate-50/80 border-b border-slate-100">
@@ -1247,6 +1332,7 @@ export function AdminReciprocalBudgets({
               </TableBody>
             </Table>
           </DraggableTableContainer>
+          </div>
         </CardContent>
       </Card>
 

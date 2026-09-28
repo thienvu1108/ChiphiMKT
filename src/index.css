@@ -151,3 +151,91 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ============================================================
+   Mobile UI optimizations (fix/mobile-ui)
+   Unlayered rules on purpose so they win over Tailwind utilities
+   on small screens only. Desktop layout is unchanged.
+   ============================================================ */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  /* Prevent accidental page-level horizontal scroll; `clip` keeps position: sticky working */
+  overflow-x: clip;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Horizontal-scroll containers (tables, tab bars) scroll smoothly on touch */
+[data-slot="table-container"],
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 639px) {
+  /* 115% root size inflates every rem spacing on phones; use native 100% on small screens */
+  html {
+    font-size: 100%;
+  }
+
+  /* Dialogs never exceed the viewport and can scroll when content is tall */
+  [data-slot="dialog-content"] {
+    max-width: calc(100vw - 1.5rem);
+    max-height: calc(100dvh - 1.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Popovers / selects / dropdowns stay inside the screen */
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="dropdown-menu-content"] {
+    max-width: calc(100vw - 1rem);
+  }
+
+  /* Dialog footers: stacked full-width buttons are easier to tap */
+  [data-slot="dialog-footer"] > button,
+  [data-slot="dialog-footer"] > a {
+    min-height: 2.75rem;
+  }
+}
+
+/* iOS Safari zooms the page when focusing inputs with font-size < 16px */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+}
+
+/* ------------------------------------------------------------
+   Mobile readability: raise tiny arbitrary text sizes (8–10px)
+   to 11px on phones only. Desktop density is unchanged.
+   Unlayered so it beats the Tailwind utility on small screens;
+   `sm:text-[..]` variants still apply from 640px up.
+   ------------------------------------------------------------ */
+@media (max-width: 639px) {
+  .text-\[7px\],
+  .text-\[8px\],
+  .text-\[9px\],
+  .text-\[10px\] {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  /* Badges/pills that pair tiny text with a fixed tiny height would clip */
+  :is(.text-\[7px\], .text-\[8px\], .text-\[9px\], .text-\[10px\]):is(.h-3, .h-3\.5, .h-4, .h-4\.5) {
+    height: auto;
+    min-height: 1rem;
+  }
+
+  /* Uppercase micro-labels with very wide tracking get cramped at the new size */
+  :is(.text-\[8px\], .text-\[9px\], .text-\[10px\]):is(.tracking-widest, .tracking-\[0\.2em\]) {
+    letter-spacing: 0.05em;
+  }
+}
