@@ -16379,7 +16379,7 @@ export default function App() {
                                     }}
                                     className="h-9 rounded-xl text-xs"
                                   />
-                                  <div className="flex gap-2">
+                                  <div className="flex flex-col sm:flex-row gap-2">
                                     <Input 
                                       placeholder="Mã Phòng tùy ý (VD: EG_BB, MB01, HN02...)"
                                       value={newBlockTeamCode}
@@ -16390,7 +16390,7 @@ export default function App() {
                                       onClick={handleCreateAndAssignTeam}
                                       disabled={isCreatingBlockTeam || !newBlockTeamName.trim()}
                                       size="sm"
-                                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-9 text-xs rounded-xl whitespace-nowrap px-3 shadow-sm"
+                                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11 sm:h-9 text-xs rounded-xl whitespace-nowrap px-3 shadow-sm w-full sm:w-auto"
                                     >
                                       {isCreatingBlockTeam ? 'Đang tạo...' : '+ Tạo & Gán'}
                                     </Button>
@@ -16418,8 +16418,8 @@ export default function App() {
                                 <div className="flex items-center justify-between">
                                   <Label className="text-[10px] font-black uppercase text-slate-400">Thêm Phòng KD Vào Khối (Còn {teamsNotInBlock.length} phòng khả dụng)</Label>
                                 </div>
-                                <div className="flex gap-2">
-                                  <div className="flex-1">
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  <div className="flex-1 min-w-0">
                                     <SearchableSelectGeneric
                                       items={teamsNotInBlockOptions}
                                       value={assignExistingTeamId}
@@ -16436,7 +16436,7 @@ export default function App() {
                                       setAssignExistingTeamId('');
                                     }}
                                     size="sm"
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-9 text-xs rounded-xl px-3 shrink-0"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11 sm:h-9 text-xs rounded-xl px-3 sm:shrink-0 w-full sm:w-auto"
                                   >
                                     + Gán vào
                                   </Button>
@@ -16451,7 +16451,7 @@ export default function App() {
                                     }}
                                     variant="outline"
                                     size="sm"
-                                    className="border-rose-200 text-rose-600 hover:bg-rose-50 font-bold h-9 text-xs rounded-xl px-2.5 shrink-0"
+                                    className="border-rose-200 text-rose-600 hover:bg-rose-50 font-bold h-11 sm:h-9 text-xs rounded-xl px-2.5 sm:shrink-0 w-full sm:w-auto"
                                     title="Xóa phòng này khỏi hệ thống"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -17128,8 +17128,8 @@ export default function App() {
                               Các bản ghi hạn mức Marketing được cấp theo dự án cho Khối
                             </CardDescription>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shrink-0">
+                          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shrink-0 col-span-2 sm:col-span-1 w-fit">
                               <button
                                 type="button"
                                 onClick={() => setBlockBudgetViewMode('table')}
@@ -17162,7 +17162,7 @@ export default function App() {
                               size="sm"
                               variant="outline"
                               onClick={handleExportBlockBudgetsExcel}
-                              className="h-8 text-xs font-bold border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 rounded-xl"
+                              className="h-11 sm:h-8 text-xs font-bold border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 rounded-xl"
                               title="Xuất file Excel các bản ghi ngân sách Khối đã lọc"
                             >
                               <FileSpreadsheet className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Xuất Excel
@@ -17172,13 +17172,13 @@ export default function App() {
                                 size="sm"
                                 variant="outline"
                                 onClick={syncOldBudgetsToBlockBudgets}
-                                className="h-8 text-xs font-bold border-purple-200 text-purple-700 bg-purple-50/50 hover:bg-purple-100 rounded-xl"
+                                className="h-11 sm:h-8 text-xs font-bold border-purple-200 text-purple-700 bg-purple-50/50 hover:bg-purple-100 rounded-xl col-span-2 sm:col-span-1"
                                 title="Tạo tự động bản ghi Ngân sách Khối từ ngân sách các team cũ"
                               >
                                 <RefreshCw className="w-3.5 h-3.5 mr-1" /> Đồng bộ từ bản cũ
                               </Button>
                             )}
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 col-span-2 sm:col-span-1 w-full sm:w-auto">
                               <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Tháng:</span>
                               <Select 
                                 value={blockBudgetMonthFilter} 
@@ -18178,8 +18178,8 @@ export default function App() {
                               <p className="text-sm font-medium">Đội của bạn chưa có thành viên nào hoạt động</p>
                             </div>
                           ) : (
-                            <div className="overflow-x-auto rounded-xl border border-slate-100">
-                              <Table>
+                            <div className="overflow-x-auto max-w-full rounded-xl border border-slate-100">
+                              <Table className="min-w-[560px]">
                                 <TableHeader className="bg-slate-50/70">
                                   <TableRow>
                                     <TableHead className="font-bold">Họ & Tên</TableHead>
@@ -23279,26 +23279,26 @@ export default function App() {
               <div className="h-2 bg-gradient-to-r from-indigo-500 to-blue-600 w-full" />
               <CardHeader className="pb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-indigo-50 rounded-lg">
+                  <div className="min-w-0">
+                    <div className="flex items-start sm:items-center gap-3 mb-1">
+                      <div className="p-2 bg-indigo-50 rounded-lg shrink-0">
                         <Wallet className="w-5 h-5 text-indigo-600" />
                       </div>
-                      <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Đăng ký ngân sách Marketing</CardTitle>
+                      <CardTitle className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight break-words leading-snug">Đăng ký ngân sách Marketing</CardTitle>
                     </div>
-                    <CardDescription className="text-slate-500 font-medium">Nhập và quản lý ngân sách dự kiến cho các chiến dịch marketing của bạn</CardDescription>
+                    <CardDescription className="text-slate-500 font-medium text-xs sm:text-sm">Nhập và quản lý ngân sách dự kiến cho các chiến dịch marketing của bạn</CardDescription>
                   </div>
 
                   {/* Current Registration Window Status Badge */}
-                  <div className="flex flex-col sm:items-end gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-xs">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:items-end gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-xs w-full sm:w-auto min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-bold text-slate-600">Kỳ hiện tại:</span>
                       <span className="text-xs font-black text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-lg border border-indigo-200">
                         {getMarketingMonthDisplayRange(getMarketingMonth(new Date())) || getMarketingMonth(new Date())}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-[11px]">
-                      <span className="text-slate-500 font-medium">
+                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <span className="text-slate-500 font-medium break-words">
                         Thời gian mở ĐK: <strong>{systemSettings?.budgetStartDay || 15}/{(() => { const m = Number(getMarketingMonth(new Date()).split('-')[1]); return m === 1 ? 12 : m - 1; })()} &rarr; hết ngày {String(systemSettings?.budgetEndDay || 5).padStart(2, '0')}/{Number(getMarketingMonth(new Date()).split('-')[1])}</strong>
                       </span>
                       {isWithinRegistrationWindow() ? (

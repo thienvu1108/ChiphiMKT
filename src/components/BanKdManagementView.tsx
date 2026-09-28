@@ -194,7 +194,10 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
   const [budgetBlockFilter, setBudgetBlockFilter] = useState('all');
   const [budgetProjectFilter, setBudgetProjectFilter] = useState('all');
   const [budgetSearchTerm, setBudgetSearchTerm] = useState('');
-  const [budgetViewMode, setBudgetViewMode] = useState<'table' | 'cards'>('table');
+  const [budgetViewMode, setBudgetViewMode] = useState<'table' | 'cards'>(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return 'cards';
+    return 'table';
+  });
 
   const availableBudgetMonths = useMemo(() => {
     const set = new Set<string>();
