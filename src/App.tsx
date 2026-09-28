@@ -133,15 +133,19 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Papa from 'papaparse';
-import { MktProcessManager } from './components/MktProcessManager';
-import { DoiUngProcessManager } from './components/DoiUngProcessManager';
+// Heavy tab components are code-split (React.lazy + Suspense) – see ./components/lazyTabs
+import {
+  MktProcessManager,
+  DoiUngProcessManager,
+  AcceptanceManager,
+  BlockReciprocalRegistration,
+  AdminReciprocalBudgets,
+  BanKdManager,
+  BanKdManagementView,
+  GitHubBackupManager,
+} from './components/lazyTabs';
 import { MktEfficiencyManager } from './components/MktEfficiencyManager';
-import { AcceptanceManager } from './components/AcceptanceManager';
-import { BlockReciprocalRegistration } from './components/BlockReciprocalRegistration';
-import { AdminReciprocalBudgets } from './components/AdminReciprocalBudgets';
-import { BanKdManager, BanKd } from './components/BanKdManager';
-import { BanKdManagementView } from './components/BanKdManagementView';
-import { GitHubBackupManager } from './components/GitHubBackupManager';
+import type { BanKd } from './components/BanKdManager';
 import { MobileViewToggle, MobileCardList, MobileCardEmpty, MobileCard, MobileCardAction, MobileViewMode } from './components/mobile/MobileCards';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
