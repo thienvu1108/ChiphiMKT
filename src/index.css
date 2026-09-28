@@ -279,3 +279,12 @@ body {
     overflow-wrap: anywhere;
   }
 }
+
+/* Drawer: only the menu list scrolls; header/footer stay put */
+[data-mobile-drawer-panel] {
+  overscroll-behavior: none;
+}
+[data-mobile-drawer-scroll] {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}

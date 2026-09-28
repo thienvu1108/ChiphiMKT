@@ -3488,6 +3488,14 @@ export default function App() {
     return () => window.removeEventListener('resize', checkViewport);
   }, []);
 
+  // Drawer: lock page scroll so only the drawer's own list scrolls (no double bars)
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [isMobileMenuOpen]);
+
   const getActiveTabLabel = (tab: string) => {
     switch (tab) {
       case 'home': return 'Trang chủ';
@@ -14820,16 +14828,16 @@ export default function App() {
 
       {/* Unified Vertical Drawer Navigation Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex">
+        <div className="fixed inset-0 z-50 flex overflow-hidden">
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in" 
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          {/* Drawer Panel */}
-          <div className="relative flex w-full max-w-xs flex-col bg-white h-full shadow-2xl animate-in slide-in-from-left duration-300 z-50">
+          {/* Drawer Panel – one scroll container only (header/footer fixed) */}
+          <div className="relative flex w-full max-w-xs flex-col bg-white h-dvh max-h-dvh overflow-hidden shadow-2xl animate-in slide-in-from-left duration-300 z-50 shrink-0" data-mobile-drawer-panel="">
             {/* Drawer Header */}
-            <div className="flex h-16 items-center justify-between px-5 border-b border-slate-100 bg-slate-50/50">
+            <div className="flex h-16 items-center justify-between px-5 border-b border-slate-100 bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-white border border-slate-100 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
                   <img 
@@ -14851,8 +14859,8 @@ export default function App() {
               </Button>
             </div>
 
-            {/* Scrollable menu content */}
-            <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            {/* Scrollable menu content – sole vertical scroller */}
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain py-4 px-3 space-y-1 custom-scrollbar" data-mobile-drawer-scroll="">
               {/* Profile Info */}
               <div className="px-3 py-3 bg-indigo-50/40 rounded-2xl border border-indigo-100/20 mb-2">
                 <div className="flex items-center gap-3">
@@ -15294,7 +15302,7 @@ export default function App() {
             </div>
 
             {/* Drawer Footer */}
-            <div className="border-t border-slate-100 p-4 bg-slate-50/50">
+            <div className="border-t border-slate-100 p-4 bg-slate-50/50 shrink-0">
               <Button 
                 onClick={() => { setIsMobileMenuOpen(false); logout(); }} 
                 variant="destructive" 
