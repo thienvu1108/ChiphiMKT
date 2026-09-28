@@ -570,9 +570,9 @@ export const BanKdManager: React.FC<BanKdManagerProps> = ({
                 <div className="p-2.5 bg-blue-50 text-blue-600 rounded-2xl">
                   <Briefcase className="w-6 h-6" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-xl sm:text-2xl font-black text-slate-900">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <CardTitle className="text-lg sm:text-2xl font-black text-slate-900 break-words">
                       Quản lý Ban Kinh Doanh (Ban KD)
                     </CardTitle>
                     <Badge variant="secondary" className="bg-blue-100 text-blue-800 font-extrabold px-2.5 py-0.5 rounded-lg text-xs">
@@ -586,11 +586,11 @@ export const BanKdManager: React.FC<BanKdManagerProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-1 sm:flex sm:flex-wrap sm:items-center gap-2 w-full md:w-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-10 rounded-xl text-xs font-bold border-slate-200 text-slate-700 hover:bg-slate-50 gap-1.5"
+                className="h-11 sm:h-10 rounded-xl text-xs font-bold border-slate-200 text-slate-700 hover:bg-slate-50 gap-1.5"
                 onClick={handleAutoSyncAllProjects}
                 title="Đồng bộ tự động ID Ban KD cho tất cả dự án"
               >
@@ -602,7 +602,7 @@ export const BanKdManager: React.FC<BanKdManagerProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-10 rounded-xl text-xs font-bold border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5"
+                  className="h-11 sm:h-10 rounded-xl text-xs font-bold border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5"
                   onClick={onNavigateToProjects}
                 >
                   <Building2 className="w-3.5 h-3.5" />
@@ -614,7 +614,7 @@ export const BanKdManager: React.FC<BanKdManagerProps> = ({
                 <Button
                   size="sm"
                   onClick={handleOpenAdd}
-                  className="h-10 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 gap-1.5 px-4"
+                  className="h-11 sm:h-10 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 gap-1.5 px-4"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Thêm Ban KD mới</span>

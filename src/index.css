@@ -144,8 +144,16 @@
   background: #cbd5e1;
 }
 
-.scroll-hide::-webkit-scrollbar {
+.scroll-hide::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+/* `scrollbar-hide` / `scrollbar-none` were used in markup but never defined */
+.scrollbar-hide,
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .scroll-hide {
   -ms-overflow-style: none;
@@ -237,5 +245,22 @@ body {
   /* Uppercase micro-labels with very wide tracking get cramped at the new size */
   :is(.text-\[8px\], .text-\[9px\], .text-\[10px\]):is(.tracking-widest, .tracking-\[0\.2em\]) {
     letter-spacing: 0.05em;
+  }
+}
+
+/* ------------------------------------------------------------
+   Mobile: select triggers never overflow their container and are
+   tappable (shadcn `data-[size=default]:h-8` outranks h-9/h-10).
+   ------------------------------------------------------------ */
+@media (max-width: 639px) {
+  [data-slot="select-trigger"] {
+    max-width: 100%;
+    min-width: 0;
+    min-height: 2.5rem;
+  }
+  [data-slot="select-trigger"] > [data-slot="select-value"] {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

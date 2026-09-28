@@ -392,8 +392,8 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
                   </span>
                 )}
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight mt-1.5">
-                Quản lý Ban KD: <span className="underline decoration-sky-300 decoration-3">{currentActiveBanKd?.name || "Chưa chọn Ban KD"}</span>
+              <h2 className="text-lg sm:text-2xl lg:text-3xl font-black tracking-tight mt-1.5 leading-snug break-words">
+                Quản lý Ban KD: <span className="underline decoration-sky-300 decoration-2 sm:decoration-3 underline-offset-4">{currentActiveBanKd?.name || "Chưa chọn Ban KD"}</span>
               </h2>
             </div>
 
@@ -415,7 +415,7 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
                     value={currentActiveBanKd?.id || (userAllowedBanKds[0]?.id || '')} 
                     onValueChange={(val) => setSelectedBanKdId(val)}
                   >
-                    <SelectTrigger className="bg-white text-slate-900 border-none rounded-xl font-bold h-10 text-xs shadow-sm hover:bg-slate-50 transition-colors">
+                    <SelectTrigger className="bg-white text-slate-900 border-none rounded-xl font-bold h-10 text-xs shadow-sm hover:bg-slate-50 transition-colors w-full min-w-0 max-w-full">
                       <SelectValue placeholder="Chọn Ban KD...">
                         <span className="truncate block text-left flex-1 font-sans">
                           {currentActiveBanKd ? `${currentActiveBanKd.name} (${currentActiveBanKd.code || 'N/A'})` : "Chọn Ban KD..."}
@@ -445,7 +445,7 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
             </div>
           </div>
 
-          <p className="text-sky-100 text-sm max-w-2xl font-medium font-sans">
+          <p className="text-sky-100 text-xs sm:text-sm max-w-2xl font-medium font-sans">
             Giám sát hồ sơ thông tin Ban, theo dõi đồng bộ đăng ký ngân sách Marketing từ các Khối và đối soát nghiệm thu chi phí thực tế cho từng dự án của Ban.
           </p>
 
@@ -472,8 +472,8 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
 
       {/* Sub Tabs Navigation */}
       <Tabs value={subTab} onValueChange={(val: any) => setSubTab(val)} className="space-y-6">
-        <div className="overflow-x-auto w-full max-w-full pb-1 scrollbar-none">
-          <TabsList className="bg-slate-100 p-1 rounded-2xl h-auto inline-flex shadow-sm min-w-max">
+        <div className="overflow-x-auto w-full max-w-full pb-1 scrollbar-none -mx-1 px-1">
+          <TabsList className="bg-slate-100 p-1 rounded-2xl h-auto inline-flex shadow-sm min-w-max gap-1">
             <TabsTrigger 
               value="bankd-info" 
               className="rounded-xl px-4 sm:px-5 py-2.5 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-blue-700 font-bold transition-all text-xs sm:text-sm flex items-center gap-2"
@@ -763,7 +763,7 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2.5 flex-1">
                   {/* Search */}
-                  <div className="relative min-w-[200px] flex-1 max-w-xs">
+                  <div className="relative w-full sm:w-auto sm:min-w-[200px] sm:flex-1 sm:max-w-xs">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
                     <Input 
                       placeholder="Tìm dự án, khối..." 
@@ -775,7 +775,7 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
 
                   {/* Month Filter */}
                   <Select value={budgetMonthFilter} onValueChange={setBudgetMonthFilter}>
-                    <SelectTrigger className="w-[140px] text-xs h-9 rounded-xl border-slate-200 bg-slate-50">
+                    <SelectTrigger className="w-full sm:w-[140px] text-xs h-9 rounded-xl border-slate-200 bg-slate-50">
                       <SelectValue placeholder="Tháng / Kỳ" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -788,7 +788,7 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
 
                   {/* Block Filter */}
                   <Select value={budgetBlockFilter} onValueChange={setBudgetBlockFilter}>
-                    <SelectTrigger className="w-[150px] text-xs h-9 rounded-xl border-slate-200 bg-slate-50">
+                    <SelectTrigger className="w-full sm:w-[150px] text-xs h-9 rounded-xl border-slate-200 bg-slate-50">
                       <SelectValue placeholder="Khối" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -803,7 +803,7 @@ export const BanKdManagementView: React.FC<BanKdManagementViewProps> = ({
 
                   {/* Project Filter */}
                   <Select value={budgetProjectFilter} onValueChange={setBudgetProjectFilter}>
-                    <SelectTrigger className="w-[170px] text-xs h-9 rounded-xl border-slate-200 bg-slate-50">
+                    <SelectTrigger className="w-full sm:w-[170px] text-xs h-9 rounded-xl border-slate-200 bg-slate-50">
                       <SelectValue placeholder="Dự án" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">

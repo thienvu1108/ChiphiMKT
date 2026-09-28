@@ -14705,7 +14705,7 @@ export default function App() {
           isScrolled ? "h-11 sm:h-12" : "h-16 sm:h-18"
         )}>
           {/* Left Side: Collapse Menu Button & Logo */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <Button 
               variant="outline" 
               size="icon" 
@@ -14732,7 +14732,7 @@ export default function App() {
               )}
             </Button>
 
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <div className={cn(
                 "bg-white border border-slate-100/80 rounded-xl flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300",
                 isScrolled ? "w-7 h-7 sm:w-8 sm:h-8" : "w-9 h-9 sm:w-11 sm:h-11 shadow-md shadow-slate-100 hover:scale-105"
@@ -14744,8 +14744,8 @@ export default function App() {
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                   <h1 className={cn(
                     "font-black tracking-tighter leading-none transition-all duration-300",
                     isScrolled ? "text-base sm:text-lg" : "text-lg sm:text-xl"
@@ -14755,9 +14755,9 @@ export default function App() {
                   </h1>
                   
                   {isScrolled && (
-                    <div className="flex items-center gap-1 sm:gap-1.5 ml-1 sm:ml-2 text-slate-300 animate-in fade-in slide-in-from-left-2 duration-300 shrink-0">
+                    <div className="flex items-center gap-1 sm:gap-1.5 ml-1 sm:ml-2 text-slate-300 animate-in fade-in slide-in-from-left-2 duration-300 min-w-0 sm:shrink-0">
                       <span className="text-xs sm:text-sm font-light">/</span>
-                      <span className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100/60 text-indigo-700 text-[9px] sm:text-xs font-black px-1.5 sm:px-2.5 py-0.5 rounded-lg uppercase tracking-wider">
+                      <span className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100/60 text-indigo-700 text-[9px] sm:text-xs font-black px-1.5 sm:px-2.5 py-0.5 rounded-lg uppercase tracking-wider truncate max-w-[38vw] sm:max-w-none">
                         {getActiveTabLabel(activeTab)}
                       </span>
                     </div>
@@ -17187,7 +17187,7 @@ export default function App() {
                                   setHasUserManuallySetBlockBudgetMonthFilter(true);
                                 }}
                               >
-                                <SelectTrigger className="w-[145px] rounded-xl text-xs h-8 bg-slate-50 border-slate-200">
+                                <SelectTrigger className="flex-1 min-w-0 sm:flex-none sm:w-[145px] rounded-xl text-xs h-8 bg-slate-50 border-slate-200">
                                   <SelectValue placeholder="Chọn tháng..." />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl">
@@ -18021,12 +18021,12 @@ export default function App() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
                 <div className="relative z-10 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <span className="bg-white/20 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-wider inline-block">
+                    <div className="min-w-0">
+                      <span className="bg-white/20 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-wider inline-block max-w-full">
                         Khu vực Dành cho Giám đốc Kinh doanh (GDKD)
                       </span>
-                      <h2 className="text-3xl font-black tracking-tight mt-1">
-                        Quản lý Team: <span className="underline decoration-emerald-300 decoration-3">{currentActiveTeam ? `${currentActiveTeam.name} (${currentActiveTeam.teamCode || ''})` : "Chưa chọn Team"}</span>
+                      <h2 className="text-lg sm:text-2xl lg:text-3xl font-black tracking-tight mt-1.5 leading-snug break-words">
+                        Quản lý Team: <span className="underline decoration-emerald-300 decoration-2 sm:decoration-3 underline-offset-4">{currentActiveTeam ? `${currentActiveTeam.name} (${currentActiveTeam.teamCode || ''})` : "Chưa chọn Team"}</span>
                       </h2>
                     </div>
                     {/* Team selector for non-GDKD roles (Admin/Accountant etc) */}
@@ -18037,7 +18037,7 @@ export default function App() {
                           value={activeTeamMgmtId || (teams[0]?.id || '')} 
                           onValueChange={(val) => setActiveTeamMgmtId(val)}
                         >
-                          <SelectTrigger className="bg-white text-slate-800 border-none rounded-xl font-bold h-9 text-xs">
+                          <SelectTrigger className="bg-white text-slate-800 border-none rounded-xl font-bold h-9 text-xs w-full min-w-0 max-w-full">
                             <SelectValue placeholder="Chọn một team...">
                               <span className="truncate block text-left flex-1 font-sans">
                                 {(() => {
@@ -18058,7 +18058,7 @@ export default function App() {
                       </div>
                     )}
                   </div>
-                  <p className="text-teal-100 text-sm max-w-2xl font-medium">
+                  <p className="text-teal-100 text-xs sm:text-sm max-w-2xl font-medium">
                     Quản lý danh sách các thành viên trong nhóm kinh doanh do bạn phụ trách, ghi nhận chi phí thực tế cho nhân sự của đội, và kiểm soát tổng hạn mức chiến dịch.
                   </p>
                 </div>
@@ -18066,20 +18066,20 @@ export default function App() {
 
               {/* Sub tabs style */}
               <Tabs value={teamSubTab} onValueChange={setTeamSubTab} className="space-y-6">
-                <TabsList className="bg-slate-100 p-1 rounded-2xl h-auto flex-wrap gap-1 shadow-sm inline-flex">
-                  <TabsTrigger value="team-members" className="rounded-xl px-4 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
+                <TabsList className="bg-slate-100 p-1 rounded-2xl h-auto gap-1 shadow-sm grid grid-cols-2 w-full sm:inline-flex sm:flex-wrap sm:w-fit">
+                  <TabsTrigger value="team-members" className="rounded-xl px-2.5 sm:px-4 py-2 min-h-11 sm:min-h-0 whitespace-normal text-left sm:text-center justify-start sm:justify-center leading-tight text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
                     <Users className="w-4 h-4 mr-1.5" /> Thành viên Đội ({teamMembers.length})
                   </TabsTrigger>
-                  <TabsTrigger value="team-costs" className="rounded-xl px-4 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
+                  <TabsTrigger value="team-costs" className="rounded-xl px-2.5 sm:px-4 py-2 min-h-11 sm:min-h-0 whitespace-normal text-left sm:text-center justify-start sm:justify-center leading-tight text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
                     <TrendingUp className="w-4 h-4 mr-1.5" /> Ghi chi phí thành viên
                   </TabsTrigger>
-                  <TabsTrigger value="team-budgets" className="rounded-xl px-4 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
+                  <TabsTrigger value="team-budgets" className="rounded-xl px-2.5 sm:px-4 py-2 min-h-11 sm:min-h-0 whitespace-normal text-left sm:text-center justify-start sm:justify-center leading-tight text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
                     <Wallet className="w-4 h-4 mr-1.5" /> Ngân sách thành viên ({myTeamBudgets.length})
                   </TabsTrigger>
-                  <TabsTrigger value="team-actuals" className="rounded-xl px-4 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
+                  <TabsTrigger value="team-actuals" className="rounded-xl px-2.5 sm:px-4 py-2 min-h-11 sm:min-h-0 whitespace-normal text-left sm:text-center justify-start sm:justify-center leading-tight text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
                     <Coins className="w-4 h-4 mr-1.5" /> Chi phí thành viên ({myTeamActualCosts.length})
                   </TabsTrigger>
-                  <TabsTrigger value="team-summary" className="rounded-xl px-4 py-2 text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
+                  <TabsTrigger value="team-summary" className="rounded-xl px-2.5 sm:px-4 py-2 min-h-11 sm:min-h-0 whitespace-normal text-left sm:text-center justify-start sm:justify-center leading-tight text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 font-bold transition-all text-xs sm:text-sm">
                     <BarChart3 className="w-4 h-4 mr-1.5" /> Tích Lũy Báo Cáo
                   </TabsTrigger>
                 </TabsList>
@@ -18658,10 +18658,10 @@ export default function App() {
                           <CardTitle className="text-lg font-black text-slate-900">
                             Hồ sơ Ngân sách thành viên ({filteredTeamBudgets.length})
                           </CardTitle>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
                             <span className="text-xs font-bold text-slate-500 whitespace-nowrap font-sans">Lọc tháng:</span>
                             <Select value={teamBudgetMonthFilter} onValueChange={setTeamBudgetMonthFilter}>
-                              <SelectTrigger className="w-[145px] rounded-xl text-xs h-8 bg-slate-50 border-slate-200">
+                              <SelectTrigger className="flex-1 min-w-0 sm:flex-none sm:w-[145px] rounded-xl text-xs h-8 bg-slate-50 border-slate-200">
                                 <SelectValue placeholder="Chọn tháng..." />
                               </SelectTrigger>
                               <SelectContent className="rounded-xl">
@@ -18759,10 +18759,10 @@ export default function App() {
                           <CardTitle className="text-lg font-black text-slate-900">
                             Hồ sơ Chi phí thành viên ({filteredTeamActualCosts.length})
                           </CardTitle>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
                             <span className="text-xs font-bold text-slate-500 whitespace-nowrap font-sans">Lọc tháng:</span>
                             <Select value={teamCostMonthFilter} onValueChange={setTeamCostMonthFilter}>
-                              <SelectTrigger className="w-[145px] rounded-xl text-xs h-8 bg-slate-50 border-slate-200">
+                              <SelectTrigger className="flex-1 min-w-0 sm:flex-none sm:w-[145px] rounded-xl text-xs h-8 bg-slate-50 border-slate-200">
                                 <SelectValue placeholder="Chọn tháng..." />
                               </SelectTrigger>
                               <SelectContent className="rounded-xl">
